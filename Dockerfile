@@ -23,4 +23,6 @@ RUN cd frontend && npm run build
 COPY . .
 
 # Init DB and start gunicorn
-CMD python setup_db.py && gunicorn server:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+COPY start_railway.sh .
+RUN chmod +x start_railway.sh
+CMD ["./start_railway.sh"]
