@@ -94,6 +94,10 @@ class Entity(Base):
     threat_level = Column(String(20), default="monitor")
     status = Column(String(20), default="active")
     last_enriched_at = Column(DateTime)
+    tech_stack = Column(JSON)
+    icp_score = Column(Integer)
+    icp_rationale = Column(Text)
+    key_challenges = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -120,6 +124,10 @@ class Entity(Base):
             "threat_level": self.threat_level,
             "status": self.status,
             "last_enriched_at": self.last_enriched_at.isoformat() if self.last_enriched_at else None,
+            "tech_stack": self.tech_stack,
+            "icp_score": self.icp_score,
+            "icp_rationale": self.icp_rationale,
+            "key_challenges": self.key_challenges,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -582,4 +590,239 @@ class PushFeedback(Base):
             "action": self.action,
             "actioned_at": self.actioned_at.isoformat() if self.actioned_at else None,
             "push_rationale": self.push_rationale,
+        }
+
+
+class MeetingNote(Base):
+    __tablename__ = "meeting_notes"
+    id = Column(Integer, primary_key=True)
+    title = Column(String(500))
+    raw_text = Column(Text, nullable=False)
+    source = Column(String(30), default="manual")  # manual/slack/gmail
+    meeting_date = Column(DateTime)
+    entity_ids = Column(JSON)      # list of entity IDs referenced
+    person_ids = Column(JSON)      # list of person IDs referenced
+    deal_ids = Column(JSON)        # list of deal IDs referenced
+    extracted_contacts = Column(JSON)      # [{name, title, company}, ...]
+    extracted_action_items = Column(JSON)  # [str, ...]
+    extracted_deal_data = Column(JSON)     # {stage, value, competitors, next_steps}
+    extracted_signals = Column(JSON)       # [{title, summary, entity_name}, ...]
+    processing_status = Column(String(20), default="pending")  # pending/processing/done/failed
+    processed_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "raw_text": self.raw_text,
+            "source": self.source,
+            "meeting_date": self.meeting_date.isoformat() if self.meeting_date else None,
+            "entity_ids": self.entity_ids,
+            "person_ids": self.person_ids,
+            "deal_ids": self.deal_ids,
+            "extracted_contacts": self.extracted_contacts,
+            "extracted_action_items": self.extracted_action_items,
+            "extracted_deal_data": self.extracted_deal_data,
+            "extracted_signals": self.extracted_signals,
+            "processing_status": self.processing_status,
+            "processed_at": self.processed_at.isoformat() if self.processed_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class StakeholderProfile(Base):
+    __tablename__ = 'stakeholder_profiles'
+    id = Column(Integer, primary_key=True)
+    person_id = Column(Integer, ForeignKey('people.id'), nullable=True)
+    created_by = Column(Integer, ForeignKey('users.id'))
+    name = Column(String(255), nullable=False)
+    title = Column(String(255))
+    company = Column(String(255))
+    role = Column(String(50))  # procurement|legal|champion|exec|finance|technical|board|user_buyer
+    reports_to_id = Column(Integer, ForeignKey('stakeholder_profiles.id'), nullable=True)
+    department = Column(String(255))
+    budget_authority_usd = Column(Integer)
+    owns_budget_for = Column(Text)
+    team_size = Column(Integer)
+    decision_style = Column(String(50))  # analytical|intuitive|consensus|directive|relational
+    risk_tolerance = Column(String(50))  # risk_averse|moderate|risk_tolerant
+    ego_level = Column(String(20))  # low|medium|high
+    orientation = Column(String(30))  # transactional|relational
+    communication_style = Column(String(30))  # direct|diplomatic|data_driven|political|emotional
+    primary_motivation = Column(String(50))  # cost_reduction|risk_mitigation|career_advancement|innovation|compliance
+    influence_level = Column(String(30))  # low|medium|high|key_decision_maker
+    technical_depth = Column(String(30))  # non_technical|moderate|deep_technical
+    typical_opening_position = Column(Text)
+    hot_buttons = Column(JSON)
+    known_tactics = Column(JSON)
+    concession_pattern = Column(String(30))  # never_first|reciprocal|random|strategic_early
+    typical_objectives = Column(JSON)
+    typical_constraints = Column(JSON)
+    raw_notes = Column(Text)
+    attributes = Column(JSON)
+    past_interactions = Column(Text)
+    win_rate = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    reports_to = relationship('StakeholderProfile', remote_side='StakeholderProfile.id', foreign_keys=[reports_to_id], overlaps='direct_reports')
+    direct_reports = relationship('StakeholderProfile', foreign_keys=[reports_to_id], overlaps='reports_to')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'person_id': self.person_id, 'created_by': self.created_by,
+            'name': self.name, 'title': self.title, 'company': self.company, 'role': self.role,
+            'reports_to_id': self.reports_to_id, 'department': self.department,
+            'budget_authority_usd': self.budget_authority_usd, 'owns_budget_for': self.owns_budget_for,
+            'team_size': self.team_size, 'decision_style': self.decision_style,
+            'risk_tolerance': self.risk_tolerance, 'ego_level': self.ego_level,
+            'orientation': self.orientation, 'communication_style': self.communication_style,
+            'primary_motivation': self.primary_motivation, 'influence_level': self.influence_level,
+            'technical_depth': self.technical_depth, 'typical_opening_position': self.typical_opening_position,
+            'hot_buttons': self.hot_buttons, 'known_tactics': self.known_tactics,
+            'concession_pattern': self.concession_pattern, 'typical_objectives': self.typical_objectives,
+            'typical_constraints': self.typical_constraints, 'raw_notes': self.raw_notes,
+            'attributes': self.attributes, 'past_interactions': self.past_interactions,
+            'win_rate': self.win_rate,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class DealIntel(Base):
+    __tablename__ = 'deal_intel'
+    id = Column(Integer, primary_key=True)
+    deal_id = Column(Integer, ForeignKey('deals.id'), unique=True, nullable=False)
+    presales_stage = Column(String(30), default='discovery')
+    # discovery|qualification|technical_eval|pricing|negotiation|close
+    metrics = Column(Text)
+    economic_buyer_profile_id = Column(Integer, ForeignKey('stakeholder_profiles.id'), nullable=True)
+    economic_buyer_notes = Column(Text)
+    decision_criteria = Column(JSON)
+    decision_process = Column(Text)
+    identified_pain = Column(Text)
+    champion_profile_id = Column(Integer, ForeignKey('stakeholder_profiles.id'), nullable=True)
+    champion_notes = Column(Text)
+    stakeholder_map = Column(JSON)
+    seller_batna = Column(Text)
+    buyer_batna_estimate = Column(Text)
+    key_risks = Column(JSON)
+    next_steps = Column(JSON)
+    raw_notes = Column(Text)
+    attributes = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    deal = relationship('Deal', foreign_keys=[deal_id])
+    economic_buyer = relationship('StakeholderProfile', foreign_keys=[economic_buyer_profile_id])
+    champion = relationship('StakeholderProfile', foreign_keys=[champion_profile_id])
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'deal_id': self.deal_id, 'presales_stage': self.presales_stage,
+            'metrics': self.metrics, 'economic_buyer_profile_id': self.economic_buyer_profile_id,
+            'economic_buyer_notes': self.economic_buyer_notes, 'decision_criteria': self.decision_criteria,
+            'decision_process': self.decision_process, 'identified_pain': self.identified_pain,
+            'champion_profile_id': self.champion_profile_id, 'champion_notes': self.champion_notes,
+            'stakeholder_map': self.stakeholder_map, 'seller_batna': self.seller_batna,
+            'buyer_batna_estimate': self.buyer_batna_estimate, 'key_risks': self.key_risks,
+            'next_steps': self.next_steps, 'raw_notes': self.raw_notes, 'attributes': self.attributes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Wargame(Base):
+    __tablename__ = 'wargames'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    deal_id = Column(Integer, ForeignKey('deals.id'), nullable=True)
+    created_by = Column(Integer, ForeignKey('users.id'))
+    presales_stage = Column(String(30), default='negotiation')
+    status = Column(String(30), default='setup')
+    # setup|active|processing_turn|auto_running|completed|archived
+    scenario_type = Column(String(50), default='standard')
+    # standard|competitive_displacement|budget_freeze|champion_lost|renewal|time_pressure
+    deal_context = Column(JSON)
+    current_round = Column(Integer, default=0)
+    max_rounds = Column(Integer, default=10)
+    outcome = Column(String(20))  # won|lost|stalled|walkaway
+    outcome_summary = Column(Text)
+    analysis = Column(JSON)
+    monte_carlo_status = Column(String(20))
+    monte_carlo_results = Column(JSON)
+    simulation_paths = Column(JSON)       # full path narratives [{path_id, label, strategy, outcome, turns, summary, key_moments}]
+    simulation_status = Column(String(20), default='idle')   # idle|running|complete|failed
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    participants = relationship('WargameParticipant', back_populates='wargame', lazy='dynamic')
+    turns = relationship('WargameTurn', back_populates='wargame', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'name': self.name, 'deal_id': self.deal_id, 'created_by': self.created_by,
+            'presales_stage': self.presales_stage, 'status': self.status,
+            'scenario_type': self.scenario_type, 'deal_context': self.deal_context,
+            'current_round': self.current_round, 'max_rounds': self.max_rounds,
+            'outcome': self.outcome, 'outcome_summary': self.outcome_summary,
+            'analysis': self.analysis, 'monte_carlo_status': self.monte_carlo_status,
+            'monte_carlo_results': self.monte_carlo_results,
+            'simulation_paths': self.simulation_paths,
+            'simulation_status': self.simulation_status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class WargameParticipant(Base):
+    __tablename__ = 'wargame_participants'
+    id = Column(Integer, primary_key=True)
+    wargame_id = Column(Integer, ForeignKey('wargames.id'), nullable=False)
+    profile_id = Column(Integer, ForeignKey('stakeholder_profiles.id'), nullable=True)
+    team = Column(String(10))  # buyer|seller
+    objectives_override = Column(JSON)
+    constraints_override = Column(JSON)
+    opening_notes = Column(Text)
+    current_trust_score = Column(Integer, default=50)
+    batna_signal = Column(String(50))
+    engagement_level = Column(String(20))
+
+    wargame = relationship('Wargame', back_populates='participants')
+    profile = relationship('StakeholderProfile', foreign_keys=[profile_id])
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'wargame_id': self.wargame_id, 'profile_id': self.profile_id,
+            'team': self.team, 'objectives_override': self.objectives_override,
+            'constraints_override': self.constraints_override, 'opening_notes': self.opening_notes,
+            'current_trust_score': self.current_trust_score, 'batna_signal': self.batna_signal,
+            'engagement_level': self.engagement_level,
+        }
+
+
+class WargameTurn(Base):
+    __tablename__ = 'wargame_turns'
+    id = Column(Integer, primary_key=True)
+    wargame_id = Column(Integer, ForeignKey('wargames.id'), nullable=False)
+    round_number = Column(Integer)
+    participant_id = Column(Integer, ForeignKey('wargame_participants.id'), nullable=True)
+    actor_label = Column(String(100))
+    action_type = Column(String(30))
+    # offer|counter_offer|concession|escalation|information_request|walkaway_signal|close|scenario_inject|intelligence_briefing|adjudication
+    content = Column(JSON)
+    reasoning = Column(Text)
+    deal_state_delta = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    wargame = relationship('Wargame', back_populates='turns')
+
+    def to_dict(self):
+        return {
+            'id': self.id, 'wargame_id': self.wargame_id, 'round_number': self.round_number,
+            'participant_id': self.participant_id, 'actor_label': self.actor_label,
+            'action_type': self.action_type, 'content': self.content, 'reasoning': self.reasoning,
+            'deal_state_delta': self.deal_state_delta,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
         }

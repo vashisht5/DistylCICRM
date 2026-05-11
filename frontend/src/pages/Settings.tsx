@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, Users, ExternalLink, Check, AlertCircle } from 'lucide-react'
-import { useAdminUsers, useUpdateUserRole } from '@/lib/api'
+import { Settings as SettingsIcon, Users, ExternalLink, Check, AlertCircle, RefreshCw, Database, Clock } from 'lucide-react'
+import { useAdminUsers, useUpdateUserRole, useSyncStatus, useTriggerSync } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { cn, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -48,6 +48,121 @@ function IntegrationCard({
           <button onClick={action} className="text-xs text-primary-600 hover:text-primary-700">{actionLabel}</button>
         )}
       </div>
+    </div>
+  )
+}
+
+function DataSourcesTab() {
+  const { data: syncStatus } = useSyncStatus()
+  const triggerSync = useTriggerSync()
+  const [gdocsFolder, setGdocsFolder] = useState(() => localStorage.getItem('gdocs_folder_id') || '')
+
+  function saveGdocsFolder() {
+    localStorage.setItem('gdocs_folder_id', gdocsFolder)
+    toast.success('Google Docs folder ID saved')
+  }
+
+  async function handleSync(source: 'granola' | 'gdocs' | 'slack') {
+    try {
+      await triggerSync.mutateAsync(source)
+      toast.success(`${source} sync triggered`)
+    } catch {
+      toast.error(`Failed to trigger ${source} sync`)
+    }
+  }
+
+  const sources = [
+    {
+      key: 'granola' as const,
+      label: 'Granola',
+      description: 'Sync meeting notes from Granola AI meeting assistant.',
+      icon: Database,
+    },
+    {
+      key: 'gdocs' as const,
+      label: 'Google Docs',
+      description: 'Scan a Google Drive folder for meeting notes and deal documents.',
+      icon: ExternalLink,
+    },
+    {
+      key: 'slack' as const,
+      label: 'Slack',
+      description: 'Sweep configured Slack channels for deal signals and mentions.',
+      icon: RefreshCw,
+    },
+  ]
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+        <Database className="w-4 h-4" /> Data Sources
+      </h2>
+
+      {sources.map(({ key, label, description, icon: Icon }) => {
+        const status = syncStatus?.[key]
+        return (
+          <div key={key} className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-gray-500" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-900">{label}</div>
+                  <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                  {status?.last_sync && (
+                    <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                      <Clock className="w-3 h-3" />
+                      Last sync: {formatDate(status.last_sync)}
+                    </div>
+                  )}
+                  {status?.records_synced != null && (
+                    <div className="text-xs text-gray-400">{status.records_synced} records synced</div>
+                  )}
+                  {status?.error && (
+                    <div className="text-xs text-red-500 mt-1">{status.error}</div>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => handleSync(key)}
+                disabled={triggerSync.isPending}
+                className="flex items-center gap-1.5 text-xs bg-primary-600 text-white px-3 py-1.5 rounded-md hover:bg-primary-700 disabled:opacity-50 shrink-0"
+              >
+                <RefreshCw className={cn('w-3 h-3', triggerSync.isPending && 'animate-spin')} />
+                Sync Now
+              </button>
+            </div>
+
+            {key === 'gdocs' && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Google Drive Folder ID</label>
+                <div className="flex gap-2">
+                  <input
+                    value={gdocsFolder}
+                    onChange={e => setGdocsFolder(e.target.value)}
+                    className="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+                  />
+                  <button
+                    onClick={saveGdocsFolder}
+                    className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-200"
+                  >
+                    Save
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Find the folder ID in the Google Drive URL after /folders/</p>
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      {!syncStatus && (
+        <div className="text-sm text-gray-400 text-center py-4">
+          Sync status unavailable — backend may not support this endpoint yet.
+        </div>
+      )}
     </div>
   )
 }
@@ -127,6 +242,7 @@ export default function Settings() {
         {[
           { id: 'integrations', label: 'Integrations' },
           { id: 'thresholds', label: 'Signal Thresholds' },
+          { id: 'datasources', label: 'Data Sources' },
           ...(isAdmin ? [{ id: 'users', label: 'Users' }] : []),
         ].map(t => (
           <button
@@ -239,6 +355,9 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Data Sources */}
+      {tab === 'datasources' && <DataSourcesTab />}
 
       {/* Users (admin only) */}
       {tab === 'users' && isAdmin && <UsersTab />}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Plus, Building2, TrendingUp, Loader2 } from 'lucide-react'
-import { useEntities, useCreateEntity, useEntityStats } from '@/lib/api'
+import { Plus, Building2, Loader2, Sparkles, RefreshCw, Cpu } from 'lucide-react'
+import { useEntities, useCreateEntity, useEnrichEntity, useEnrichAll, useEnrichStatus } from '@/lib/api'
 import { useNavigate } from 'react-router-dom'
 import { threatBadgeColor, entityTypeBadge, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -8,11 +8,57 @@ import { toast } from 'sonner'
 const ENTITY_TYPES = ['all', 'competitor', 'target', 'partner']
 const THREAT_LEVELS = ['all', 'critical', 'high', 'medium', 'low', 'monitor']
 
-function EntityCard({ entity, onClick }: { entity: any; onClick: () => void }) {
+function IcpBadge({ score }: { score?: number | null }) {
+  if (score == null) return null
+  const color =
+    score >= 70 ? 'bg-green-100 text-green-700 border-green-200' :
+    score >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                  'bg-red-100 text-red-700 border-red-200'
+  return (
+    <span className={cn('text-xs px-2 py-0.5 rounded border font-semibold', color)}>
+      ICP {score}
+    </span>
+  )
+}
+
+function TechStackChips({ techStack }: { techStack?: any[] | null }) {
+  if (!techStack || techStack.length === 0) return null
+  const top3 = techStack.slice(0, 3)
+  return (
+    <div className="flex gap-1 flex-wrap mt-2">
+      {top3.map((t: any, i: number) => (
+        <span key={i} className="flex items-center gap-1 text-[10px] bg-gray-50 border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded">
+          <Cpu className="w-2.5 h-2.5" />
+          {t.vendor || t}
+        </span>
+      ))}
+      {techStack.length > 3 && (
+        <span className="text-[10px] text-gray-400">+{techStack.length - 3} more</span>
+      )}
+    </div>
+  )
+}
+
+function EntityCard({ entity, onClick, enrichingIds }: {
+  entity: any
+  onClick: () => void
+  enrichingIds: Set<number>
+}) {
+  const enrichEntity = useEnrichEntity()
+  const isEnriching = enrichingIds.has(entity.id) || enrichEntity.isPending
+
+  function handleEnrich(e: React.MouseEvent) {
+    e.stopPropagation()
+    enrichEntity.mutate(entity.id, {
+      onSuccess: () => toast.success(`Enriching ${entity.name}...`),
+      onError: () => toast.error(`Failed to start enrichment for ${entity.name}`),
+    })
+  }
+
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl border border-gray-200 p-4 hover:border-primary-300 hover:shadow-sm transition-all cursor-pointer"
+      className="bg-white rounded-xl border border-gray-200 p-4 hover:border-primary-300 hover:shadow-sm transition-all cursor-pointer group"
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
@@ -21,10 +67,22 @@ function EntityCard({ entity, onClick }: { entity: any; onClick: () => void }) {
             <p className="text-xs text-gray-400 mt-0.5">{entity.headquarters}</p>
           )}
         </div>
-        <div className="flex gap-1.5 ml-2 shrink-0">
+        <div className="flex gap-1.5 ml-2 shrink-0 items-center">
           <span className={cn('text-xs px-2 py-0.5 rounded border font-medium', entityTypeBadge(entity.entity_type))}>
             {entity.entity_type}
           </span>
+          <button
+            onClick={handleEnrich}
+            disabled={isEnriching}
+            title="Enrich with AI"
+            className="p-1 rounded text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+          >
+            {isEnriching ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -41,12 +99,21 @@ function EntityCard({ entity, onClick }: { entity: any; onClick: () => void }) {
             {entity.distyl_exposure} exposure
           </span>
         )}
+        <IcpBadge score={entity.icp_score} />
         {entity.signal_count > 0 && (
           <span className="text-xs text-primary-600 bg-primary-50 px-2 py-0.5 rounded ml-auto">
             {entity.signal_count} signals
           </span>
         )}
       </div>
+
+      <TechStackChips techStack={entity.tech_stack} />
+
+      {entity.last_enriched_at && (
+        <p className="text-[10px] text-gray-300 mt-2">
+          Enriched {new Date(entity.last_enriched_at).toLocaleDateString()}
+        </p>
+      )}
     </div>
   )
 }
@@ -156,6 +223,15 @@ export default function Entities() {
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
 
+  const enrichAll = useEnrichAll()
+  const { data: enrichStatus } = useEnrichStatus()
+
+  const enrichingIds = new Set<number>(
+    (enrichStatus?.entities ?? [])
+      .filter((e: any) => e.enriching)
+      .map((e: any) => e.id)
+  )
+
   const params: Record<string, string> = {}
   if (typeFilter !== 'all') params.entity_type = typeFilter
   if (threatFilter !== 'all') params.threat_level = threatFilter
@@ -166,6 +242,13 @@ export default function Entities() {
     !search || e.name.toLowerCase().includes(search.toLowerCase())
   )
 
+  function handleEnrichAll() {
+    enrichAll.mutate(undefined, {
+      onSuccess: (result) => toast.success(`Enriching ${result.started} entities...`),
+      onError: () => toast.error('Failed to start enrichment'),
+    })
+  }
+
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -173,13 +256,33 @@ export default function Entities() {
           <Building2 className="w-5 h-5 text-primary-600" />
           Entities
           <span className="text-sm font-normal text-gray-400">({entities.length})</span>
+          {enrichingIds.size > 0 && (
+            <span className="flex items-center gap-1 text-xs text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              {enrichingIds.size} enriching
+            </span>
+          )}
         </h1>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" /> Add Entity
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleEnrichAll}
+            disabled={enrichAll.isPending}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {enrichAll.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3.5 h-3.5" />
+            )}
+            Enrich All
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Entity
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -226,6 +329,7 @@ export default function Entities() {
           <EntityCard
             key={entity.id}
             entity={entity}
+            enrichingIds={enrichingIds}
             onClick={() => navigate(`/dossiers/${entity.id}`)}
           />
         ))}

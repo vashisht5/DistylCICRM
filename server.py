@@ -33,6 +33,9 @@ from routes.slack_webhook import slack_bp
 from routes.gmail_webhook import gmail_bp
 from routes.chat import chat_bp
 from routes.admin import admin_bp
+from routes.enrichment import enrichment_bp
+from routes.notes import notes_bp
+from routes.wargame import wargame_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(entities_bp)
@@ -48,6 +51,9 @@ app.register_blueprint(slack_bp)
 app.register_blueprint(gmail_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(enrichment_bp)
+app.register_blueprint(notes_bp)
+app.register_blueprint(wargame_bp)
 
 
 @app.route('/api/health')

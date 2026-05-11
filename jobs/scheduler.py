@@ -30,6 +30,7 @@ def start_scheduler():
     from jobs.autonomy_loop import run_autonomy_loop
     from jobs.people_sweep import run_people_sweep
     from jobs.digest_builder import run_digest_builder
+    from jobs.enrichment_sweep import run_enrichment_sweep
 
     # Autonomy loop: every 30 minutes
     _scheduler.add_job(
@@ -60,6 +61,27 @@ def start_scheduler():
     _scheduler.add_job(
         run_digest_builder, 'cron', day_of_week='mon', hour=8, minute=0,
         id='digest_builder', replace_existing=True
+    )
+
+    # Enrichment sweep: daily 6am UTC
+    _scheduler.add_job(
+        run_enrichment_sweep, 'cron', hour=6, minute=0,
+        id='enrichment_sweep', replace_existing=True
+    )
+
+    from jobs.content_sweep import run_content_sweep
+    from jobs.slack_sweep import run_slack_sweep
+
+    # Content sweep (Granola + Google Docs): every 2 hours
+    _scheduler.add_job(
+        run_content_sweep, 'interval', hours=2,
+        id='content_sweep', replace_existing=True
+    )
+
+    # Slack sweep: every 6 hours
+    _scheduler.add_job(
+        run_slack_sweep, 'interval', hours=6,
+        id='slack_sweep', replace_existing=True
     )
 
     _scheduler.start()

@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   Shield, Newspaper, Building2, FileText, Zap, Users,
   GitBranch, Network, Swords, BookOpen, MessageSquare, Settings,
-  Bell, LogOut, ChevronRight
+  Bell, LogOut, ChevronRight, NotebookPen, UserCog
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSignalStats } from '@/lib/api'
@@ -16,6 +16,9 @@ const NAV_ITEMS = [
   { to: '/signals', icon: Zap, label: 'Signals' },
   { to: '/people', icon: Users, label: 'People' },
   { to: '/pipeline', icon: GitBranch, label: 'Pipeline' },
+  { to: '/notes', icon: NotebookPen, label: 'Notes' },
+  { to: '/stakeholders', icon: UserCog, label: 'Stakeholders' },
+  { to: '/wargame', icon: Swords, label: 'Wargame' },
   { to: '/ecosystem', icon: Network, label: 'Ecosystem' },
   { to: '/battle-cards', icon: Swords, label: 'Battle Cards' },
   { to: '/digests', icon: BookOpen, label: 'Digests' },

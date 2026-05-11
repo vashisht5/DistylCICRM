@@ -118,13 +118,13 @@ def me():
     return jsonify(user)
 
 
-@auth_bp.route('/auth/dev-login', methods=['POST'])
+@auth_bp.route('/auth/dev-login', methods=['GET', 'POST'])
 def dev_login():
     """Development-only bypass login"""
     if os.getenv('FLASK_ENV') == 'production':
         return jsonify({"error": "Not available in production"}), 403
 
-    data = request.json or {}
+    data = (request.json or {}) if request.method == 'POST' else {}
     email = data.get('email', 'dev@distyl.ai')
     role = data.get('role', 'admin')
     name = data.get('name', f'Dev {role.capitalize()}')
@@ -156,4 +156,6 @@ def dev_login():
             'picture_url': user.picture_url,
             'role': user.role,
         }
+    if request.method == 'GET':
+        return redirect('http://localhost:5002/#/wargame')
     return jsonify(session['user'])

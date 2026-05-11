@@ -212,3 +212,232 @@ export const useUpdateUserRole = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   })
 }
+
+// ── Enrichment ────────────────────────────────────────────────────
+export const useEnrichEntity = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (entityId: number) => api.post(`/api/enrich/entity/${entityId}`).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['entities'] })
+      qc.invalidateQueries({ queryKey: ['enrich-status'] })
+    },
+  })
+}
+
+export const useEnrichAll = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (staleDays?: number) => api.post('/api/enrich/all', { stale_days: staleDays ?? 7 }).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['enrich-status'] })
+      qc.invalidateQueries({ queryKey: ['entities'] })
+    },
+  })
+}
+
+export const useEnrichStatus = () =>
+  useQuery({
+    queryKey: ['enrich-status'],
+    queryFn: () => api.get('/api/enrich/status').then(r => r.data),
+    refetchInterval: 10000,
+  })
+
+// ── Notes ─────────────────────────────────────────────────────────
+export const useNotes = (params?: Record<string, string>) =>
+  useQuery({
+    queryKey: ['notes', params],
+    queryFn: () => api.get('/api/notes', { params }).then(r => r.data),
+    refetchInterval: 5000,
+  })
+
+export const useNote = (id: number | null) =>
+  useQuery({
+    queryKey: ['note', id],
+    queryFn: () => api.get(`/api/notes/${id}`).then(r => r.data),
+    enabled: !!id,
+    refetchInterval: (q) => {
+      const data = q.state.data as any
+      const status = data?.note?.processing_status
+      return status === 'pending' || status === 'processing' ? 3000 : false
+    },
+  })
+
+export const useSubmitNote = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { raw_text: string; title?: string; meeting_date?: string; source?: string }) =>
+      api.post('/api/notes', data).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notes'] }),
+  })
+}
+
+export const useReprocessNote = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post(`/api/notes/${id}/reprocess`).then(r => r.data),
+    onSuccess: (_, id) => qc.invalidateQueries({ queryKey: ['note', id] }),
+  })
+}
+
+// ── Stakeholder Profiles ──────────────────────────────────────────
+export const useStakeholderProfiles = (params?: Record<string, string>) =>
+  useQuery({ queryKey: ['stakeholder-profiles', params], queryFn: () => api.get('/api/stakeholder-profiles', { params }).then(r => r.data) })
+
+export const useStakeholderProfile = (id: number | null) =>
+  useQuery({ queryKey: ['stakeholder-profile', id], queryFn: () => api.get(`/api/stakeholder-profiles/${id}`).then(r => r.data), enabled: !!id })
+
+export const useCreateStakeholderProfile = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => api.post('/api/stakeholder-profiles', data).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stakeholder-profiles'] }),
+  })
+}
+
+export const useUpdateStakeholderProfile = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => api.put(`/api/stakeholder-profiles/${id}`, data).then(r => r.data),
+    onSuccess: (_, { id }) => { qc.invalidateQueries({ queryKey: ['stakeholder-profiles'] }); qc.invalidateQueries({ queryKey: ['stakeholder-profile', id] }) },
+  })
+}
+
+export const useDeleteStakeholderProfile = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/api/stakeholder-profiles/${id}`).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stakeholder-profiles'] }),
+  })
+}
+
+export const useParseStakeholderNotes = () =>
+  useMutation({ mutationFn: (data: Record<string, unknown>) => api.post('/api/stakeholder-profiles/parse', data).then(r => r.data) })
+
+export const useProfileReports = (id: number | null) =>
+  useQuery({ queryKey: ['profile-reports', id], queryFn: () => api.get(`/api/stakeholder-profiles/${id}/reports`).then(r => r.data), enabled: !!id })
+
+// ── Deal Intel ────────────────────────────────────────────────────
+export const useDealIntel = (dealId: number | null) =>
+  useQuery({ queryKey: ['deal-intel', dealId], queryFn: () => api.get(`/api/deals/${dealId}/intel`).then(r => r.data), enabled: !!dealId })
+
+export const useUpdateDealIntel = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ dealId, data }: { dealId: number; data: Record<string, unknown> }) => api.put(`/api/deals/${dealId}/intel`, data).then(r => r.data),
+    onSuccess: (_, { dealId }) => qc.invalidateQueries({ queryKey: ['deal-intel', dealId] }),
+  })
+}
+
+export const useParseDealNotes = () =>
+  useMutation({ mutationFn: ({ dealId, data }: { dealId: number; data: Record<string, unknown> }) => api.post(`/api/deals/${dealId}/intel/parse`, data).then(r => r.data) })
+
+// ── Wargame ───────────────────────────────────────────────────────
+export const useWargames = (params?: Record<string, string>) =>
+  useQuery({ queryKey: ['wargames', params], queryFn: () => api.get('/api/wargame', { params }).then(r => r.data) })
+
+export const useWargame = (id: number | null) =>
+  useQuery({
+    queryKey: ['wargame', id],
+    queryFn: () => api.get(`/api/wargame/${id}`).then(r => r.data),
+    enabled: !!id,
+    refetchInterval: (q) => {
+      const data = q.state.data as any
+      return data?.status === 'auto_running' || data?.status === 'processing_turn' ? 2000 : false
+    }
+  })
+
+export const useCreateWargame = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => api.post('/api/wargame', data).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['wargames'] }),
+  })
+}
+
+export const useStartWargame = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post(`/api/wargame/${id}/start`).then(r => r.data),
+    onSuccess: (_, id) => qc.invalidateQueries({ queryKey: ['wargame', id] }),
+  })
+}
+
+export const useSubmitTurn = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, move }: { id: number; move: Record<string, unknown> }) => api.post(`/api/wargame/${id}/turn`, { move }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['wargame', id] }),
+  })
+}
+
+export const useToggleAutoRun = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, enabled, seller_strategy }: { id: number; enabled: boolean; seller_strategy?: string }) =>
+      api.post(`/api/wargame/${id}/autorun`, { enabled, seller_strategy }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['wargame', id] }),
+  })
+}
+
+export const useInjectScenario = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, scenario, description }: { id: number; scenario: string; description: string }) =>
+      api.post(`/api/wargame/${id}/inject`, { scenario, description }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['wargame', id] }),
+  })
+}
+
+export const useWargameAnalysis = (id: number | null) =>
+  useQuery({ queryKey: ['wargame-analysis', id], queryFn: () => api.get(`/api/wargame/${id}/analysis`).then(r => r.data), enabled: !!id })
+
+export const useRunMonteCarlo = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, n_runs, seller_strategy, config }: { id: number; n_runs?: number; seller_strategy?: string; config?: Record<string, unknown> }) =>
+      api.post(`/api/wargame/${id}/monte-carlo`, { n_runs: n_runs || 500, seller_strategy, config }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['wargame', id] }),
+  })
+}
+
+export const usePathMonteCarlo = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, path_index, from_round, n_runs, config }: { id: number; path_index: number; from_round?: number; n_runs?: number; config?: Record<string, unknown> }) =>
+      api.post(`/api/wargame/${id}/path-monte-carlo`, { path_index, from_round, n_runs: n_runs || 500, config }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['simulation-paths', id] }),
+  })
+}
+
+export const useSimulatePaths = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, n_paths }: { id: number; n_paths?: number }) =>
+      api.post(`/api/wargame/${id}/simulate-paths`, { n_paths: n_paths || 4 }).then(r => r.data),
+    onSuccess: (_, { id }) => qc.invalidateQueries({ queryKey: ['simulation-paths', id] }),
+  })
+}
+
+export const useSimulationPaths = (id: number | null) =>
+  useQuery({
+    queryKey: ['simulation-paths', id],
+    queryFn: () => api.get(`/api/wargame/${id}/simulation-paths`).then(r => r.data),
+    enabled: !!id,
+    refetchInterval: (q) => {
+      const data = q.state.data as any
+      return data?.simulation_status === 'running' ? 2000 : false
+    }
+  })
+
+// ── Sync ──────────────────────────────────────────────────────────
+export const useSyncStatus = () =>
+  useQuery({ queryKey: ['sync-status'], queryFn: () => api.get('/api/sync/status').then(r => r.data), refetchInterval: 30000 })
+
+export const useTriggerSync = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (source: 'granola' | 'gdocs' | 'slack') => api.post(`/api/sync/${source}`).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sync-status'] }),
+  })
+}

@@ -181,6 +181,8 @@ def _process_gmail_push(email: str, history_id: str):
                             break
 
                 mention.signal_ids = signal_ids
+                # Enrich stakeholder profiles for known people in the email
+                _enrich_profiles_from_email(body, sender, full_text)
                 db.commit()
 
     except Exception as e:
@@ -243,3 +245,42 @@ def setup_gmail_watch():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+def _enrich_profiles_from_email(body: str, sender: str, full_text: str):
+    """Enrich stakeholder profiles from email content."""
+    try:
+        from database import get_db
+        from models import StakeholderProfile
+        from ai.profile_enricher import ProfileEnricher
+
+        with get_db() as db:
+            profiles = db.query(StakeholderProfile).all()
+            enricher = ProfileEnricher()
+
+            for profile in profiles:
+                if profile.name.lower() in full_text.lower():
+                    enrichment = enricher.enrich_from_text(
+                        text=full_text[:4000],
+                        person_name=profile.name,
+                        source_type='email',
+                        existing_profile={'name': profile.name, 'title': profile.title},
+                    )
+
+                    if enrichment.get('past_interactions_append'):
+                        existing = profile.past_interactions or ''
+                        timestamp = datetime.utcnow().strftime('%Y-%m-%d')
+                        profile.past_interactions = f"{existing}\n[{timestamp} email] {enrichment['past_interactions_append']}".strip()
+
+                    if enrichment.get('field_updates'):
+                        for field, value in enrichment['field_updates'].items():
+                            if value and hasattr(profile, field) and not getattr(profile, field):
+                                setattr(profile, field, value)
+
+                    if enrichment.get('attributes_add'):
+                        attrs = profile.attributes or {}
+                        attrs.update(enrichment['attributes_add'])
+                        profile.attributes = attrs
+
+    except Exception as e:
+        print(f"Profile enrichment from email error: {e}")

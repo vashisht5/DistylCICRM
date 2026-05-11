@@ -33,3 +33,25 @@ def get_file_text(access_token: str, file_id: str, mime_type: str) -> str:
         while not done:
             _, done = downloader.next_chunk()
         return fh.getvalue().decode('utf-8', errors='replace')[:10000]
+
+
+def get_recently_modified_docs(access_token: str, folder_id: str, since_datetime) -> List[Dict]:
+    """List docs modified since the given datetime."""
+    from datetime import timezone
+    service = get_drive_service(access_token)
+    # Format as RFC 3339
+    if hasattr(since_datetime, 'isoformat'):
+        ts = since_datetime.isoformat()
+        if not ts.endswith('Z') and '+' not in ts:
+            ts += 'Z'
+    else:
+        ts = str(since_datetime)
+
+    query = f"'{folder_id}' in parents and trashed=false and modifiedTime > '{ts}'"
+    results = service.files().list(
+        q=query,
+        fields="files(id, name, mimeType, modifiedTime)",
+        orderBy="modifiedTime desc",
+        pageSize=20
+    ).execute()
+    return results.get('files', [])

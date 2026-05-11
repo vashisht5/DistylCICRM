@@ -15,6 +15,10 @@ import BattleCards from '@/pages/BattleCards'
 import Digests from '@/pages/Digests'
 import Chat from '@/pages/Chat'
 import Settings from '@/pages/Settings'
+import Notes from '@/pages/Notes'
+import StakeholderLibrary from '@/pages/StakeholderLibrary'
+import WargamePage from '@/pages/Wargame'
+import PreSalesDeal from '@/pages/PreSalesDeal'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -43,6 +47,10 @@ export default function App() {
             <Route path="signals" element={<Signals />} />
             <Route path="people" element={<People />} />
             <Route path="pipeline" element={<Pipeline />} />
+            <Route path="notes" element={<Notes />} />
+            <Route path="stakeholders" element={<StakeholderLibrary />} />
+            <Route path="wargame" element={<WargamePage />} />
+            <Route path="deals/:id" element={<PreSalesDeal />} />
             <Route path="ecosystem" element={<Ecosystem />} />
             <Route path="battle-cards" element={<BattleCards />} />
             <Route path="digests" element={<Digests />} />
