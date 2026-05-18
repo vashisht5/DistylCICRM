@@ -2,12 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    color: theme('colors.tdds.900');        /* near-black #141414, never #000 */
+    background: theme('colors.tdds.100');   /* TDDS canvas #f5f5f5 */
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* Tabular numbers on data — KPIs, prices, tables */
+  .tabular-nums, table, [data-numeric], .stat {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  ::selection {
+    background: theme('colors.magenta.500');
+    color: white;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: theme('boxShadow.focus');
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.tdds.200');
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: theme('colors.tdds.300'); background-clip: padding-box; }
 }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+@layer components {
+  /* Eyebrow — uppercase tracked label above sections (TDDS pattern) */
+  .eyebrow {
+    font-family: theme('fontFamily.display');
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: theme('colors.tdds.400');
+  }
+
+  /* Display heading — Plus Jakarta Sans, tight tracking */
+  .display {
+    font-family: theme('fontFamily.display');
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  /* Hairline divider */
+  .hairline { background-color: theme('colors.tdds.200'); }
+
+  /* ── Custom slider (lever cards) ──────────────────────────
+     Pass --pct as % filled. Thumb is magenta; track has a
+     magenta-filled prefix and grey suffix. */
+  .custom-slider {
+    --pct: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      theme('colors.magenta.500') 0%,
+      theme('colors.magenta.500') var(--pct),
+      theme('colors.tdds.200')  var(--pct),
+      theme('colors.tdds.200')  100%
+    );
+    outline: none;
+    cursor: pointer;
+    transition: background 60ms linear;
+  }
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid theme('colors.magenta.500');
+    box-shadow: 0 1px 2px rgba(65, 65, 65, 0.15);
+    cursor: grab;
+    transition: transform 100ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 100ms ease;
+  }
+  .custom-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(226, 0, 116, 0.15);
+  }
+  .custom-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(226, 0, 116, 0.22);
+  }
+  .custom-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid theme('colors.magenta.500');
+    box-shadow: 0 1px 2px rgba(65, 65, 65, 0.15);
+    cursor: grab;
+  }
+  .custom-slider:focus-visible {
+    box-shadow: 0 0 0 3px rgba(226, 0, 116, 0.18);
+  }
+}
+
+/* Print — Battle Card single-page output */
+@media print {
+  body { background: white; }
+  aside, .print\\:hidden { display: none !important; }
+  main { overflow: visible !important; }
+  @page { size: A4 landscape; margin: 12mm; }
+}

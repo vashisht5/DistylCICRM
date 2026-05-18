@@ -45,3 +45,6 @@ Thumbs.db
 # Alembic
 alembic/versions/*.py
 !alembic/versions/.gitkeep
+
+# Playwright MCP — regenerated every browser session
+.playwright-mcp/

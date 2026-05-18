@@ -36,18 +36,29 @@ for port in 5002 5173; do
   fi
 done
 
+# ── Python venv ───────────────────────────────────────────────
+VENV_DIR="$SCRIPT_DIR/.venv"
+if [ ! -d "$VENV_DIR" ] || [ ! -x "$VENV_DIR/bin/pip" ]; then
+  echo "→ Creating virtualenv at .venv..."
+  rm -rf "$VENV_DIR"
+  python3 -m venv "$VENV_DIR"
+  "$VENV_DIR/bin/python" -m pip install --upgrade pip --quiet
+fi
+VENV_PY="$VENV_DIR/bin/python"
+VENV_PIP="$VENV_DIR/bin/pip"
+
 # ── Python deps ───────────────────────────────────────────────
 echo "→ Checking Python dependencies..."
-pip3 install -r "$SCRIPT_DIR/requirements.txt" --quiet -q
+"$VENV_PIP" install -r "$SCRIPT_DIR/requirements.txt" --quiet -q
 
 # ── Database ──────────────────────────────────────────────────
 echo "→ Initializing database..."
 cd "$SCRIPT_DIR"
-python3 setup_db.py
+"$VENV_PY" setup_db.py
 
 # ── Backend ───────────────────────────────────────────────────
 echo "→ Starting backend on :5002..."
-python3 server.py > /tmp/distyl-be.log 2>&1 &
+"$VENV_PY" server.py > /tmp/distyl-be.log 2>&1 &
 BE_PID=$!
 
 # Wait for backend to be ready

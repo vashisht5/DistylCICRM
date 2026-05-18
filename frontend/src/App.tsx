@@ -1,34 +1,52 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
 import { Toaster } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import Layout from '@/components/Layout'
 import Login from '@/pages/Login'
-import WarRoom from '@/pages/WarRoom'
-import NewsFeed from '@/pages/NewsFeed'
-import Entities from '@/pages/Entities'
-import Dossiers from '@/pages/Dossiers'
-import Signals from '@/pages/Signals'
-import People from '@/pages/People'
-import Pipeline from '@/pages/Pipeline'
-import Ecosystem from '@/pages/Ecosystem'
-import BattleCards from '@/pages/BattleCards'
-import Digests from '@/pages/Digests'
-import Chat from '@/pages/Chat'
-import Settings from '@/pages/Settings'
-import Notes from '@/pages/Notes'
-import StakeholderLibrary from '@/pages/StakeholderLibrary'
-import WargamePage from '@/pages/Wargame'
-import PreSalesDeal from '@/pages/PreSalesDeal'
+
+// Primary screens — eagerly loaded so the demo is snappy
+import Negotiations from '@/pages/Negotiations'
+import DealRoom from '@/pages/DealRoom'
+
+// Secondary — lazy
+const BattleCardPage = lazy(() => import('@/pages/BattleCardPage'))
+const NewsSignals = lazy(() => import('@/pages/NewsSignals'))
+const Vendors = lazy(() => import('@/pages/Vendors'))
+const Stakeholders = lazy(() => import('@/pages/Stakeholders'))
+const WarGameHome = lazy(() => import('@/pages/WarGameHome'))
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+
+// Deprioritized legacy — lazy too
+const WarRoom = lazy(() => import('@/pages/WarRoom'))
+const Dossiers = lazy(() => import('@/pages/Dossiers'))
+const Signals = lazy(() => import('@/pages/Signals'))
+const People = lazy(() => import('@/pages/People'))
+const Pipeline = lazy(() => import('@/pages/Pipeline'))
+const Ecosystem = lazy(() => import('@/pages/Ecosystem'))
+const Digests = lazy(() => import('@/pages/Digests'))
+const Chat = lazy(() => import('@/pages/Chat'))
+const Notes = lazy(() => import('@/pages/Notes'))
+const PreSalesDeal = lazy(() => import('@/pages/PreSalesDeal'))
+const BattleCardsLegacy = lazy(() => import('@/pages/BattleCards'))
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
   if (isLoading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+    <div className="min-h-screen bg-tdds-100 grid place-items-center">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-magenta-500" />
     </div>
   )
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <>{children}</>
+}
+
+function LazyFallback() {
+  return (
+    <div className="min-h-[60vh] grid place-items-center">
+      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-magenta-500" />
+    </div>
+  )
 }
 
 export default function App() {
@@ -38,28 +56,36 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-            <Route index element={<Navigate to="/war-room" replace />} />
-            <Route path="war-room" element={<WarRoom />} />
-            <Route path="news" element={<NewsFeed />} />
-            <Route path="entities" element={<Entities />} />
-            <Route path="dossiers" element={<Dossiers />} />
-            <Route path="dossiers/:id" element={<Dossiers />} />
-            <Route path="signals" element={<Signals />} />
-            <Route path="people" element={<People />} />
-            <Route path="pipeline" element={<Pipeline />} />
-            <Route path="notes" element={<Notes />} />
-            <Route path="stakeholders" element={<StakeholderLibrary />} />
-            <Route path="wargame" element={<WargamePage />} />
-            <Route path="deals/:id" element={<PreSalesDeal />} />
-            <Route path="ecosystem" element={<Ecosystem />} />
-            <Route path="battle-cards" element={<BattleCards />} />
-            <Route path="digests" element={<Digests />} />
-            <Route path="chat" element={<Chat />} />
-            <Route path="settings" element={<Settings />} />
+            <Route index element={<Navigate to="/negotiations" replace />} />
+
+            {/* ── Primary ────────────────────────────── */}
+            <Route path="negotiations" element={<Negotiations />} />
+            <Route path="negotiations/:dealId" element={<DealRoom />} />
+            <Route path="news" element={<Suspense fallback={<LazyFallback />}><NewsSignals /></Suspense>} />
+            <Route path="vendors" element={<Suspense fallback={<LazyFallback />}><Vendors /></Suspense>} />
+            <Route path="stakeholders" element={<Suspense fallback={<LazyFallback />}><Stakeholders /></Suspense>} />
+            <Route path="battle-cards" element={<Suspense fallback={<LazyFallback />}><BattleCardPage /></Suspense>} />
+            <Route path="wargame" element={<Suspense fallback={<LazyFallback />}><WarGameHome /></Suspense>} />
+            <Route path="settings" element={<Suspense fallback={<LazyFallback />}><SettingsPage /></Suspense>} />
+
+            {/* ── Legacy routes — reachable, unlinked ── */}
+            <Route path="war-room" element={<Suspense fallback={<LazyFallback />}><WarRoom /></Suspense>} />
+            <Route path="entities" element={<Navigate to="/vendors" replace />} />
+            <Route path="dossiers" element={<Suspense fallback={<LazyFallback />}><Dossiers /></Suspense>} />
+            <Route path="dossiers/:id" element={<Suspense fallback={<LazyFallback />}><Dossiers /></Suspense>} />
+            <Route path="signals" element={<Suspense fallback={<LazyFallback />}><Signals /></Suspense>} />
+            <Route path="people" element={<Suspense fallback={<LazyFallback />}><People /></Suspense>} />
+            <Route path="pipeline" element={<Suspense fallback={<LazyFallback />}><Pipeline /></Suspense>} />
+            <Route path="notes" element={<Suspense fallback={<LazyFallback />}><Notes /></Suspense>} />
+            <Route path="deals/:id" element={<Suspense fallback={<LazyFallback />}><PreSalesDeal /></Suspense>} />
+            <Route path="ecosystem" element={<Suspense fallback={<LazyFallback />}><Ecosystem /></Suspense>} />
+            <Route path="digests" element={<Suspense fallback={<LazyFallback />}><Digests /></Suspense>} />
+            <Route path="chat" element={<Suspense fallback={<LazyFallback />}><Chat /></Suspense>} />
+            <Route path="battle-cards/legacy" element={<Suspense fallback={<LazyFallback />}><BattleCardsLegacy /></Suspense>} />
           </Route>
         </Routes>
       </BrowserRouter>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors closeButton />
     </>
   )
 }

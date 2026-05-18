@@ -1,51 +1,32 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
-  Shield, Newspaper, Building2, FileText, Zap, Users,
-  GitBranch, Network, Swords, BookOpen, MessageSquare, Settings,
-  Bell, LogOut, ChevronRight, NotebookPen, UserCog
+  Handshake, Newspaper, Building2, UserSquare, Layers, Dices, Settings,
+  LogOut,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useSignalStats } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { TMobileMark } from '@/components/ui/TMobileMark'
 
-const NAV_ITEMS = [
-  { to: '/war-room', icon: Shield, label: 'War Room' },
-  { to: '/news', icon: Newspaper, label: 'News Feed' },
-  { to: '/entities', icon: Building2, label: 'Entities' },
-  { to: '/dossiers', icon: FileText, label: 'Dossiers' },
-  { to: '/signals', icon: Zap, label: 'Signals' },
-  { to: '/people', icon: Users, label: 'People' },
-  { to: '/pipeline', icon: GitBranch, label: 'Pipeline' },
-  { to: '/notes', icon: NotebookPen, label: 'Notes' },
-  { to: '/stakeholders', icon: UserCog, label: 'Stakeholders' },
-  { to: '/wargame', icon: Swords, label: 'Wargame' },
-  { to: '/ecosystem', icon: Network, label: 'Ecosystem' },
-  { to: '/battle-cards', icon: Swords, label: 'Battle Cards' },
-  { to: '/digests', icon: BookOpen, label: 'Digests' },
-  { to: '/chat', icon: MessageSquare, label: 'Chat' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+// Negotiation-focused IA — 7 nav items (Deal Room is a child route, not in nav).
+const NAV: Array<{ to: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>; label: string; group: 'work' | 'intel' | 'tools' }> = [
+  { to: '/negotiations',  icon: Handshake,    label: 'Negotiations',  group: 'work' },
+  { to: '/news',          icon: Newspaper,    label: 'News & Signals', group: 'work' },
+  { to: '/vendors',       icon: Building2,    label: 'Vendors',       group: 'intel' },
+  { to: '/stakeholders',  icon: UserSquare,   label: 'Stakeholders',  group: 'intel' },
+  { to: '/battle-cards',  icon: Layers,       label: 'Battle Cards',  group: 'intel' },
+  { to: '/wargame',       icon: Dices,        label: 'War Game',      group: 'tools' },
+  { to: '/settings',      icon: Settings,     label: 'Settings',      group: 'tools' },
 ]
 
-function RoleBadge({ role }: { role?: string }) {
-  const colors: Record<string, string> = {
-    admin: 'bg-red-100 text-red-700',
-    analyst: 'bg-purple-100 text-purple-700',
-    sales: 'bg-blue-100 text-blue-700',
-    viewer: 'bg-gray-100 text-gray-600',
-  }
-  if (!role) return null
-  return (
-    <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide', colors[role] || colors.viewer)}>
-      {role}
-    </span>
-  )
+const GROUP_LABEL: Record<string, string> = {
+  work: 'Active work',
+  intel: 'Intelligence',
+  tools: 'Tools',
 }
 
 export default function Layout() {
   const { user, role } = useAuth()
-  const { data: stats } = useSignalStats()
   const navigate = useNavigate()
-  const newSignals = stats?.total_new ?? 0
 
   async function handleLogout() {
     await fetch('/auth/logout', { method: 'POST' })
@@ -53,79 +34,93 @@ export default function Layout() {
     window.location.reload()
   }
 
+  const groups = ['work', 'intel', 'tools'] as const
+  const grouped = groups.map(g => ({ g, items: NAV.filter(n => n.group === g) }))
+
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col shrink-0">
-        {/* Logo */}
-        <div className="h-14 flex items-center px-4 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-gray-900 leading-none">Distyl Intel</div>
-              <div className="text-[10px] text-gray-400 leading-none mt-0.5">Competitive Intelligence</div>
+    <div className="flex h-screen bg-tdds-100 overflow-hidden">
+      {/* ── Sidebar ──────────────────────────────────────────── */}
+      <aside className="w-60 bg-white border-r border-tdds-200 flex flex-col shrink-0">
+        {/* Brand lockup — single magenta moment: the T mark */}
+        <div className="h-14 flex items-center px-5 border-b border-tdds-200">
+          <div className="flex items-center gap-2.5">
+            <TMobileMark size={28} />
+            <div className="leading-tight">
+              <div className="font-display text-[13px] font-bold text-tdds-900 tracking-tight">Procurement Co-Pilot</div>
+              <div className="text-[10px] text-tdds-400 font-semibold tracking-wider uppercase mt-0.5">T-Mobile · Devices</div>
             </div>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) => cn(
-                'flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              )}
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon className={cn('w-4 h-4 shrink-0', isActive ? 'text-primary-600' : 'text-gray-400')} />
-                  <span className="flex-1">{label}</span>
-                  {label === 'Signals' && newSignals > 0 && (
-                    <span className="bg-primary-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                      {newSignals > 99 ? '99+' : newSignals}
-                    </span>
-                  )}
-                  {isActive && <ChevronRight className="w-3 h-3 text-primary-400" />}
-                </>
-              )}
-            </NavLink>
+        {/* Nav — grouped, with thin magenta active rail */}
+        <nav className="flex-1 px-2 py-4 overflow-y-auto">
+          {grouped.map(({ g, items }, gi) => (
+            <div key={g} className={cn(gi > 0 && 'mt-5')}>
+              <div className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-tdds-400">
+                {GROUP_LABEL[g]}
+              </div>
+              <div className="space-y-px">
+                {items.map(({ to, icon: Icon, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      cn(
+                        'relative flex items-center gap-2.5 pl-3 pr-2.5 py-1.5 rounded-sm text-[13px] transition-colors duration-100',
+                        isActive
+                          ? 'bg-tdds-100 text-tdds-900 font-semibold'
+                          : 'text-tdds-600 hover:bg-tdds-50 hover:text-tdds-900',
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-magenta-500 rounded-r-full" />
+                        )}
+                        <Icon
+                          className={cn('w-[15px] h-[15px] shrink-0', isActive ? 'text-tdds-900' : 'text-tdds-400')}
+                          strokeWidth={isActive ? 2 : 1.75}
+                        />
+                        <span className="flex-1">{label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
-        {/* User section */}
-        <div className="border-t border-gray-100 p-3">
-          <div className="flex items-center gap-2 mb-2">
+        {/* User block */}
+        <div className="border-t border-tdds-200 px-3 py-3">
+          <div className="flex items-center gap-2.5 mb-2">
             {user?.picture_url ? (
               <img src={user.picture_url} alt="" className="w-7 h-7 rounded-full" />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-700">
-                {user?.name?.[0]?.toUpperCase() ?? 'U'}
+              <div className="w-7 h-7 rounded-full bg-tdds-900 grid place-items-center text-[11px] font-bold text-white">
+                {(user?.name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-900 truncate">{user?.name ?? user?.email}</div>
-              <RoleBadge role={role} />
+              <div className="text-[12px] font-semibold text-tdds-900 truncate leading-tight">{user?.name ?? user?.email}</div>
+              {role && (
+                <div className="text-[10px] font-semibold tracking-wider uppercase text-tdds-400 mt-0.5">{role}</div>
+              )}
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors w-full"
+            className="flex items-center gap-1.5 text-[11px] text-tdds-500 hover:text-tdds-900 transition-colors w-full font-medium"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3.5 h-3.5" strokeWidth={1.75} />
             Sign out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
+      {/* ── Main ─────────────────────────────────────────────── */}
+      <main className="flex-1 overflow-y-auto bg-tdds-100">
         <Outlet />
       </main>
     </div>
