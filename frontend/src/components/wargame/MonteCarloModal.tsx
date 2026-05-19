@@ -1,13 +1,6 @@
 /**
- * Monte Carlo war game modal.
- *
- * Runs N (default 1000) simulations of the negotiation. For each run,
- * each lever is sampled from its [min, max] range using a triangular
- * distribution centered on the user's current proposed value — vendor
- * pushback ≠ exact lever value, so the distribution captures uncertainty.
- *
- * Outputs P10/P50/P90, best/worst CM, win probability vs Bain target,
- * and a histogram. Mike sees a *range*, not a point estimate.
+ * Monte Carlo war game modal — outputs P10/P50/P90, best/worst CM,
+ * probability vs internal target, and a histogram.
  */
 
 import { useMemo, useState, useEffect, useCallback } from 'react'
@@ -64,11 +57,10 @@ export function MonteCarloModal({ open, onClose, deal, proposedValues, onApplySc
           <div>
             <div className="eyebrow mb-1">War game · Monte Carlo</div>
             <h2 className="font-display text-xl font-bold text-tdds-900 tracking-tight leading-tight">
-              {deal.device} — {result ? result.runs.toLocaleString() : '—'} scenario simulation
+              {deal.device} — {result ? result.runs.toLocaleString() : '—'} run simulation
             </h2>
             <p className="text-[12px] text-tdds-500 mt-1 max-w-xl leading-relaxed">
-              Each lever is sampled from its uncertainty range with weight toward your current counter-offer. Shows the
-              <span className="text-tdds-900 font-semibold"> distribution of likely outcomes</span> if Google pushes back.
+              Distribution of contribution margin across lever uncertainty ranges, centered on the current counter-offer.
             </p>
           </div>
           <button onClick={onClose} className="text-tdds-400 hover:text-tdds-900 p-1 -m-1" aria-label="Close">

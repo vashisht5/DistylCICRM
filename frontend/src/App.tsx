@@ -10,9 +10,11 @@ import Negotiations from '@/pages/Negotiations'
 import DealRoom from '@/pages/DealRoom'
 
 // Secondary — lazy
+const Overview = lazy(() => import('@/pages/Overview'))
 const BattleCardPage = lazy(() => import('@/pages/BattleCardPage'))
 const NewsSignals = lazy(() => import('@/pages/NewsSignals'))
 const Vendors = lazy(() => import('@/pages/Vendors'))
+const VendorDetail = lazy(() => import('@/pages/VendorDetail'))
 const Stakeholders = lazy(() => import('@/pages/Stakeholders'))
 const WarGameHome = lazy(() => import('@/pages/WarGameHome'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
@@ -56,13 +58,15 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-            <Route index element={<Navigate to="/negotiations" replace />} />
+            <Route index element={<Navigate to="/overview" replace />} />
 
             {/* ── Primary ────────────────────────────── */}
+            <Route path="overview" element={<Suspense fallback={<LazyFallback />}><Overview /></Suspense>} />
             <Route path="negotiations" element={<Negotiations />} />
             <Route path="negotiations/:dealId" element={<DealRoom />} />
             <Route path="news" element={<Suspense fallback={<LazyFallback />}><NewsSignals /></Suspense>} />
             <Route path="vendors" element={<Suspense fallback={<LazyFallback />}><Vendors /></Suspense>} />
+            <Route path="vendors/:vendorId" element={<Suspense fallback={<LazyFallback />}><VendorDetail /></Suspense>} />
             <Route path="stakeholders" element={<Suspense fallback={<LazyFallback />}><Stakeholders /></Suspense>} />
             <Route path="battle-cards" element={<Suspense fallback={<LazyFallback />}><BattleCardPage /></Suspense>} />
             <Route path="wargame" element={<Suspense fallback={<LazyFallback />}><WarGameHome /></Suspense>} />

@@ -1,11 +1,7 @@
 /**
- * Battle Card — single-page printable brief.
- *
- * What Mike Simpson walks into the Google meeting holding. Vendor profile,
- * counterpart bio, recent moves with our leverage / their leverage,
- * explicit open/target/walk-away per lever, and opener/closer language.
- *
- * Designed to print on one A4 page. Use Cmd+P or the Print button.
+ * Battle Card — single-page printable brief. Vendor profile, counterpart
+ * bio, recent moves, open/target/walk-away per lever, and opener/closer
+ * scripts. Designed to print on one A4 page.
  */
 
 import { Link } from 'react-router-dom'
@@ -54,6 +50,40 @@ export default function BattleCardPage() {
         <div className="grid grid-cols-12 gap-0 print:gap-0">
           {/* Left column: counterpart + context */}
           <div className="col-span-12 lg:col-span-5 border-r border-tdds-200 px-8 py-6 print:px-6 print:py-4 space-y-6">
+            {/* Models under negotiation — the SKU breakdown behind "Pixel 10" */}
+            <section>
+              <div className="eyebrow mb-2">Models under negotiation</div>
+              <div className="border border-tdds-200 rounded-sm overflow-hidden">
+                <div className="grid grid-cols-12 gap-1 px-2 py-1.5 bg-tdds-50 border-b border-tdds-200 text-[9px] font-bold uppercase tracking-wider text-tdds-500">
+                  <div className="col-span-5">SKU</div>
+                  <div className="col-span-3 text-right">Wholesale</div>
+                  <div className="col-span-2 text-right">Units</div>
+                  <div className="col-span-2 text-right">Mix</div>
+                </div>
+                {BC.models.map(m => (
+                  <div key={m.sku} className="grid grid-cols-12 gap-1 px-2 py-1.5 border-b border-tdds-100 last:border-b-0 text-[11px] items-center">
+                    <div className="col-span-5">
+                      <div className="font-semibold text-tdds-900 leading-tight">{m.sku}</div>
+                      <div className="text-[9px] text-tdds-400 mt-0.5 leading-tight">
+                        {m.storage} · {m.colors.length} colors
+                      </div>
+                    </div>
+                    <div className="col-span-3 text-right tabular-nums">
+                      <div className="font-semibold text-tdds-900">${m.wholesaleUsd}</div>
+                      <div className="text-[9px] text-tdds-400">list ${m.listUsd}</div>
+                    </div>
+                    <div className="col-span-2 text-right tabular-nums text-tdds-700 font-medium">{m.unitsK}K</div>
+                    <div className="col-span-2 text-right">
+                      <span className="text-[10px] font-bold tabular-nums text-magenta-600">{m.mixPct}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-tdds-500 italic mt-2 leading-snug">
+                Lever positions apply to the volume-weighted blended price across these SKUs.
+              </p>
+            </section>
+
             {/* Counterpart bio */}
             <section>
               <div className="eyebrow mb-2">Counterpart</div>
@@ -98,7 +128,7 @@ export default function BattleCardPage() {
 
             {/* Context — recent moves */}
             <section>
-              <div className="eyebrow mb-2">The board, as of this morning</div>
+              <div className="eyebrow mb-2">Recent moves</div>
               <div className="space-y-3">
                 {BC.context.map((c, i) => (
                   <div key={i} className="text-[12px] leading-relaxed">

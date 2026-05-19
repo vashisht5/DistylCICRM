@@ -1,13 +1,8 @@
 /**
- * Deal Room — Pixel 10 Q1 2026 negotiation workspace.
+ * Deal Room — per-vendor negotiation workspace.
  *
- * The state model:
- *   - We keep the canonical `deal` (baseline + initial proposed values) frozen.
- *   - `leverValues[componentId] = currentProposedValue` is the working draft.
- *   - Sliders on lever cards mutate `leverValues`.
- *   - The waterfall + CM headline + impact rail all derive from this state.
- *
- * Counter-offer save just shows a toast — paper prototype, no backend.
+ * Levers mutate a working draft (`values` keyed by component id). The
+ * waterfall, CM headline, and impact rail all derive from that state.
  */
 
 import { useParams, useNavigate, Link } from 'react-router-dom'
@@ -36,7 +31,7 @@ export default function DealRoom() {
           variant="editorial"
           title="Deal Room not yet provisioned"
           description="This vendor's negotiation workspace is in setup. Open an active cycle to continue."
-          action={<Button variant="primary" onClick={() => navigate('/negotiations/pixel-10-q1-2026')}>Open Pixel 10 cycle</Button>}
+          action={<Button variant="primary" onClick={() => navigate('/negotiations/pixel-10-q1-2026')}>Pixel 10 deal room</Button>}
         />
       </div>
     )
@@ -131,9 +126,9 @@ function PixelTenWorkspace({ deal }: { deal: Negotiation }) {
         <div className="eyebrow mb-4">Contribution Margin — Q1 2026 Pixel 10 cycle</div>
         <div className="flex items-end gap-8 lg:gap-12 flex-wrap">
           <CmFigure
-            eyebrow="If we accept as-is"
+            eyebrow="Vendor proposal · as-is"
             value={formatMoney(baselineCm * 1_000_000, { decimals: 1 })}
-            sub={<button onClick={resetToVendor} className="text-tdds-500 hover:text-tdds-900 underline-offset-2 hover:underline">Show this in chart</button>}
+            sub={<button onClick={resetToVendor} className="text-tdds-500 hover:text-tdds-900 underline-offset-2 hover:underline">Reset to baseline</button>}
           />
 
           <CmArrow delta={deltaM} />
@@ -173,9 +168,8 @@ function PixelTenWorkspace({ deal }: { deal: Negotiation }) {
             <div className="font-display font-bold text-tdds-900 text-base mt-0.5">Lever-by-lever contribution to margin</div>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-tdds-500 font-medium">
-            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-[1px] bg-tdds-300" />Baseline</span>
-            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-[1px] bg-magenta-500" />Counter-offer</span>
-            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-[1px] bg-tdds-900 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px] before:bg-success" />Negotiation impact</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-[1px] bg-tdds-400" />Vendor proposal</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-[1px] bg-magenta-500" />With counter-offer</span>
           </div>
         </div>
         <div className="p-5">
@@ -190,14 +184,11 @@ function PixelTenWorkspace({ deal }: { deal: Negotiation }) {
         </div>
       </Card>
 
-      {/* ── Levers — sliders drive the waterfall ── */}
+      {/* ── Levers ─────────────────────────────── */}
       <div className="mb-3 flex items-baseline justify-between">
         <div>
-          <div className="eyebrow">Levers we're pulling</div>
-          <div className="font-display font-bold text-tdds-900 text-base mt-1">{deal.levers.length} active hypotheses · drag any slider</div>
-        </div>
-        <div className="text-[11px] text-tdds-500 font-medium">
-          Hover a card to highlight its bar · drag the slider to recompute CM in real time
+          <div className="eyebrow">Levers</div>
+          <div className="font-display font-bold text-tdds-900 text-base mt-1">{deal.levers.length} active</div>
         </div>
       </div>
 

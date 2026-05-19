@@ -1,26 +1,27 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   Handshake, Newspaper, Building2, UserSquare, Layers, Dices, Settings,
-  LogOut,
+  LogOut, LayoutDashboard,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { TMobileMark } from '@/components/ui/TMobileMark'
 
-// Negotiation-focused IA — 7 nav items (Deal Room is a child route, not in nav).
+// Sidebar IA — Deal Room is a child route, not in nav.
 const NAV: Array<{ to: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>; label: string; group: 'work' | 'intel' | 'tools' }> = [
-  { to: '/negotiations',  icon: Handshake,    label: 'Negotiations',  group: 'work' },
-  { to: '/news',          icon: Newspaper,    label: 'News & Signals', group: 'work' },
-  { to: '/vendors',       icon: Building2,    label: 'Vendors',       group: 'intel' },
-  { to: '/stakeholders',  icon: UserSquare,   label: 'Stakeholders',  group: 'intel' },
-  { to: '/battle-cards',  icon: Layers,       label: 'Battle Cards',  group: 'intel' },
-  { to: '/wargame',       icon: Dices,        label: 'War Game',      group: 'tools' },
-  { to: '/settings',      icon: Settings,     label: 'Settings',      group: 'tools' },
+  { to: '/overview',      icon: LayoutDashboard, label: 'Home',           group: 'work' },
+  { to: '/negotiations',  icon: Handshake,       label: 'Negotiations',   group: 'work' },
+  { to: '/news',          icon: Newspaper,       label: 'News & Signals', group: 'work' },
+  { to: '/vendors',       icon: Building2,       label: 'Vendors',        group: 'intel' },
+  { to: '/stakeholders',  icon: UserSquare,      label: 'Stakeholders',   group: 'intel' },
+  { to: '/battle-cards',  icon: Layers,          label: 'Battle Cards',   group: 'intel' },
+  { to: '/wargame',       icon: Dices,           label: 'War Game',       group: 'tools' },
+  { to: '/settings',      icon: Settings,        label: 'Settings',       group: 'tools' },
 ]
 
 const GROUP_LABEL: Record<string, string> = {
-  work: 'Active work',
-  intel: 'Intelligence',
+  work: 'Workspace',
+  intel: 'Reference',
   tools: 'Tools',
 }
 

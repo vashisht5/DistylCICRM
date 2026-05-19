@@ -1,6 +1,5 @@
 /**
- * Vendors — portfolio of active device-procurement vendors.
- * Click a vendor row to enter its active negotiation.
+ * Vendors — portfolio of device-procurement suppliers.
  */
 
 import { useNavigate } from 'react-router-dom'
@@ -19,12 +18,11 @@ export default function Vendors() {
   return (
     <div className="px-10 py-8 max-w-[1400px] mx-auto">
       <PageHeader
-        eyebrow="Vendor portfolio"
-        title="Vendors — device category"
-        description="Five vendors carry the active Q1 2026 cycle. Total category external spend ≈ $10.6B."
+        eyebrow="Device category · Q1 2026"
+        title="Vendors"
         meta={
           <>
-            <span><strong className="text-tdds-900 font-semibold">{VENDORS.length}</strong> vendors</span>
+            <span><strong className="text-tdds-900 font-semibold">{VENDORS.length}</strong> active</span>
             <span className="text-tdds-300">·</span>
             <span><strong className="text-tdds-900 font-semibold">${totalSpend.toFixed(1)}B</strong> annual spend</span>
           </>
@@ -36,7 +34,15 @@ export default function Vendors() {
           const neg = NEGOTIATIONS_INDEX.find(n => n.vendor.name === v.name)
           const exposureTone: Tone = v.exposureTone
           return (
-            <Card key={v.id} interactive className="p-5" onClick={() => neg && navigate(`/negotiations/${neg.id}`)}>
+            <Card
+              key={v.id}
+              interactive
+              className="p-5"
+              onClick={() => {
+                if (v.id === 'google') navigate('/vendors/google')
+                else if (neg) navigate(`/negotiations/${neg.id}`)
+              }}
+            >
               <div className="flex items-start gap-3 mb-4">
                 <div className={cn(
                   'w-10 h-10 rounded-sm grid place-items-center font-display font-extrabold text-base shrink-0',

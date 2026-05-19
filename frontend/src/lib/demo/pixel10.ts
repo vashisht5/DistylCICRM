@@ -1,10 +1,8 @@
 /**
- * Pixel 10 · Q1 2026 negotiation — canonical demo story.
+ * Pixel 10 · Q1 2026 — negotiation record powering the Deal Room.
  *
- * Per Bain × Distyl onboarding (May 11, 2026): all figures are illustrative,
- * derived from publicly available Pixel 9 predecessor patterns. No real
- * T-Mobile data. The goal is a paper prototype that validates look, feel,
- * and the dollar-impact storyline before any real data is connected.
+ * Components feed the P&L waterfall; levers feed the slider cards;
+ * signals feed the per-vendor news rail.
  */
 
 export type WaterfallComponent = {
@@ -24,7 +22,7 @@ export type Lever = {
   name: string
   /** One-line summary of the value hypothesis (testable claim). */
   hypothesis: string
-  /** Where the claim came from (Bain session, sell-through data, etc). */
+  /** Where the claim came from (sell-through data, internal analysis, etc.). */
   source: string
   /** Confidence in the claim. */
   confidence: 'high' | 'medium' | 'low'
@@ -60,9 +58,9 @@ export type Negotiation = {
   baselineCmM: number
   /** Counter-offer CM if all proposed lever moves are accepted. */
   proposedCmM: number
-  /** Bain-aligned target CM. */
+  /** Internal target CM. */
   targetCmM: number
-  /** Volume — illustrative units. */
+  /** Unit volume in millions. */
   unitsM: number
   /** When negotiator last touched this deal. */
   lastTouchedAt: string
@@ -72,8 +70,7 @@ export type Negotiation = {
 }
 
 // ────────────────────────────────────────────────────────────────
-// Pixel 10 — the demo's hero negotiation
-// Numbers seeded directly from the onboarding doc § 3b waterfall.
+// Pixel 10 — Q1 2026 cycle
 // ────────────────────────────────────────────────────────────────
 
 export const PIXEL_10: Negotiation = {
@@ -89,7 +86,7 @@ export const PIXEL_10: Negotiation = {
   unitsM: 0.95,
   lastTouchedAt: '2026-05-15T13:42:00Z',
 
-  // P&L Waterfall — per onboarding doc § 3b
+  // P&L waterfall components
   components: [
     { id: 'buy_cost',      label: 'Buying Cost',         baseline: -22.5, proposed: -21.3, kind: 'cost',    leverId: 'price_compression' },
     { id: 'volume_inc',    label: 'Volume Incentive',    baseline:   2.5, proposed:   3.5, kind: 'credit',  leverId: 'volume_incentive' },
@@ -100,11 +97,11 @@ export const PIXEL_10: Negotiation = {
     { id: 'promo_support', label: 'Promo Support',       baseline:   2.0, proposed:   2.4, kind: 'credit',  leverId: 'promo_support' },
   ],
 
-  // Levers — each is a testable hypothesis (Bain Apr 21 + May 8 sessions)
+  // Levers — each is a testable hypothesis on the cycle
   levers: [
     {
       id: 'price_compression',
-      name: 'Price Compression',
+      name: 'Pricing',
       hypothesis: 'Vendor targets are set 8–12% below achievable. Pixel 9 sell-through patterns suggest ~5% real compression remains available without breaking the relationship.',
       source: 'Sell-through curve · Pixel 9 prior cycle',
       confidence: 'high',
@@ -165,7 +162,7 @@ export const PIXEL_10: Negotiation = {
     },
   ],
 
-  // Vendor signals — what the AI is watching on Google
+  // Vendor signals on Google
   signals: [
     {
       id: 's1',

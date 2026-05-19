@@ -1,8 +1,5 @@
 /**
- * Settings — minimal themed shell.
- *
- * Paper prototype: settings exist only to confirm the design language is
- * complete. Nothing actually persists.
+ * Settings — account, notifications, data sources, and security.
  */
 
 import { useState } from 'react'
@@ -20,9 +17,8 @@ export default function SettingsPage() {
   return (
     <div className="px-10 py-8 max-w-[900px] mx-auto">
       <PageHeader
-        eyebrow="Configuration"
+        eyebrow="Workspace"
         title="Settings"
-        description="Workspace preferences for the Procurement Co-Pilot prototype."
       />
 
       <div className="space-y-6">
@@ -98,7 +94,7 @@ export default function SettingsPage() {
             <div className="text-[13px] text-tdds-700 leading-relaxed max-w-md">
               All workspace activity is logged and retained per internal procurement policy.
             </div>
-            <Button variant="secondary" size="md" icon={Check} onClick={() => toast.info('Audit log preview coming next sprint')}>View audit log</Button>
+            <Button variant="secondary" size="md" icon={Check} onClick={() => toast.info('Opening audit log…')}>View audit log</Button>
           </div>
         </Card>
       </div>

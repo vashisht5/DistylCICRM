@@ -1,21 +1,20 @@
 /**
  * Stakeholders — everyone touching the device procurement engagement.
  *
- * Three buckets:
- *   - Internal (T-Mobile)
- *   - Partner (Bain)
+ * Two buckets:
+ *   - Internal (T-Mobile procurement team)
  *   - Vendor (counterparts at Google, Samsung, Apple, etc.)
  */
 
-import { Building2, Crown, Users } from 'lucide-react'
+import { Building2, Crown } from 'lucide-react'
 import { PageHeader, Card, Badge } from '@/components/ui'
 import { STAKEHOLDERS, type Stakeholder } from '@/lib/demo/supportingData'
 import { cn } from '@/lib/utils'
 
 const SIDE_META = {
-  internal: { label: 'T-Mobile', icon: Crown, color: 'text-magenta-600 bg-magenta-50 ring-magenta-200' },
-  partner:  { label: 'Bain',     icon: Users, color: 'text-tdds-700 bg-tdds-100 ring-tdds-200' },
-  vendor:   { label: 'Vendor',   icon: Building2, color: 'text-warning bg-warning/8 ring-warning/20' },
+  internal: { label: 'T-Mobile Procurement', icon: Crown, color: 'text-magenta-600 bg-magenta-50 ring-magenta-200' },
+  partner:  { label: 'Partner',              icon: Building2, color: 'text-tdds-700 bg-tdds-100 ring-tdds-200' },
+  vendor:   { label: 'Vendor',               icon: Building2, color: 'text-warning bg-warning/8 ring-warning/20' },
 }
 
 export default function Stakeholders() {
@@ -28,9 +27,15 @@ export default function Stakeholders() {
   return (
     <div className="px-10 py-8 max-w-[1400px] mx-auto">
       <PageHeader
-        eyebrow="Engagement org map"
+        eyebrow="Q1 2026 cycle"
         title="Stakeholders"
-        description="Every person in the room — or behind it. Decision-makers, partners, counterparts. Tap a card to view battle-card-style depth (Phase G+)."
+        meta={
+          <>
+            <span><strong className="text-tdds-900 font-semibold">{grouped.internal.length}</strong> internal</span>
+            <span className="text-tdds-300">·</span>
+            <span><strong className="text-tdds-900 font-semibold">{grouped.vendor.length}</strong> vendor counterparts</span>
+          </>
+        }
       />
 
       <div className="space-y-8">

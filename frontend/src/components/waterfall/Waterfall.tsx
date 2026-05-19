@@ -1,13 +1,15 @@
 /**
  * P&L Waterfall — Pixel 10 cycle.
  *
- * Shows each P&L component as a horizontal bar centered on a zero line.
- * Baseline value is rendered in TDDS grey; counter-offer overlays in
- * magenta. A green "negotiation impact" rail on the left totals the
- * captured upside (per Apr 21 Bain planning session, onboarding doc § 4.2).
+ * True stepped waterfall: every bar starts where the previous left off, with
+ * up-steps for credits/revenue and down-steps for costs, ending in the
+ * total CM column. Two side-by-side charts:
  *
- * Pure HTML + Tailwind. No SVG gymnastics. Easy to evolve as Phase D
- * adds interactivity.
+ *   - Baseline (gray) — what the vendor proposal lands at as-received
+ *   - Counter-offer (magenta) — where the levers in play put us
+ *
+ * Each step shows its delta. Hovering a row in either chart highlights the
+ * paired lever component.
  */
 
 import { memo, useMemo } from 'react'
@@ -19,7 +21,6 @@ interface WaterfallProps {
   baselineCm: number
   proposedCm: number
   targetCm: number
-  /** Lever id currently hovered/focused — highlights its component row. */
   highlightLeverId?: string | null
   onRowHover?: (leverId: string | null) => void
 }
@@ -29,39 +30,43 @@ export const Waterfall = memo(WaterfallImpl)
 function WaterfallImpl({ components, baselineCm, proposedCm, highlightLeverId, onRowHover }: WaterfallProps) {
   const impact = proposedCm - baselineCm
 
-  // Common bar-width scale — single max across all components for consistent comparison
-  const maxAbs = useMemo(() => Math.max(
-    ...components.flatMap(c => [Math.abs(c.baseline), Math.abs(c.proposed)]),
-  ), [components])
+  // Build the baseline + counter-offer step series. Order matters: P&L stack.
+  // Revenue first, then buying cost, then credits, then promos, etc.
+  const ordered = useMemo(() => orderForWaterfall(components), [components])
 
   return (
-    <div className="px-1">
-      {/* ── Top: CM journey strip ─────────────────────── */}
+    <div>
+      {/* ── CM journey strip ─────────────────────────────────── */}
       <CmJourney baselineCm={baselineCm} proposedCm={proposedCm} impact={impact} />
 
-      {/* ── Lever-by-lever waterfall ─────────────────── */}
-      <div className="flex items-stretch mt-6 gap-4">
-        <ImpactRail impactM={impact} />
-
-        <div className="flex-1 min-w-0 py-1">
-          {components.map(c => (
-            <WaterfallRow
-              key={c.id}
-              component={c}
-              maxAbs={maxAbs}
-              highlighted={!!(highlightLeverId && c.leverId === highlightLeverId)}
-              onHoverChange={hovered => onRowHover?.(hovered ? c.leverId ?? null : null)}
-            />
-          ))}
-        </div>
+      {/* ── Two stepped waterfalls side-by-side ──────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+        <SteppedWaterfall
+          title="Vendor proposal — as received"
+          tone="gray"
+          components={ordered}
+          finalCm={ordered.reduce((s, c) => s + c.baseline, 0)}
+          variant="baseline"
+          highlightLeverId={highlightLeverId}
+          onRowHover={onRowHover}
+        />
+        <SteppedWaterfall
+          title="With our counter-offer"
+          tone="magenta"
+          components={ordered}
+          finalCm={ordered.reduce((s, c) => s + c.proposed, 0)}
+          variant="proposed"
+          highlightLeverId={highlightLeverId}
+          onRowHover={onRowHover}
+        />
       </div>
     </div>
   )
 }
 
 // ───────────────────────────────────────────────────────────
-// CM journey strip — single horizontal bar: baseline (grey)
-// + negotiation impact (green) = counter-offer total
+// CM journey strip — unchanged from before; gives the headline
+// "+X.X negotiation impact" before the chart detail.
 // ───────────────────────────────────────────────────────────
 
 function CmJourney({ baselineCm, proposedCm, impact }: { baselineCm: number; proposedCm: number; impact: number }) {
@@ -81,7 +86,6 @@ function CmJourney({ baselineCm, proposedCm, impact }: { baselineCm: number; pro
         </div>
       </div>
       <div className="relative h-10 rounded-sm overflow-hidden ring-1 ring-tdds-200 bg-tdds-50">
-        {/* Baseline — light grey */}
         <div
           className="absolute inset-y-0 left-0 bg-tdds-300 transition-all duration-300 ease-tdds"
           style={{ width: `${baselinePct}%` }}
@@ -90,7 +94,6 @@ function CmJourney({ baselineCm, proposedCm, impact }: { baselineCm: number; pro
             {formatMoney(baselineCm * 1_000_000, { decimals: 1 })} baseline
           </div>
         </div>
-        {/* Negotiation impact — charcoal; green is reserved for the small delta numbers only */}
         <div
           className="absolute inset-y-0 bg-tdds-900 transition-all duration-300 ease-tdds"
           style={{ left: `${baselinePct}%`, width: `${impactPct}%` }}
@@ -108,117 +111,191 @@ function CmJourney({ baselineCm, proposedCm, impact }: { baselineCm: number; pro
 }
 
 // ───────────────────────────────────────────────────────────
-// Left green rail — "negotiation impact" callout
+// Stepped waterfall — true cascading chart
 // ───────────────────────────────────────────────────────────
 
-function ImpactRail({ impactM }: { impactM: number }) {
-  return (
-    <div className="w-[100px] shrink-0 flex flex-col">
-      <div className="text-[9px] font-bold uppercase tracking-wider text-tdds-500 text-center leading-tight mb-1.5">
-        Negotiation<br />impact
-      </div>
-      {/* TDDS pattern: charcoal panel with a thin green left accent that carries the semantic
-         "positive impact" reading without flooding the layout with bright green. */}
-      <div className="flex-1 relative bg-tdds-900 rounded-sm overflow-hidden min-h-[180px] flex items-center justify-center">
-        <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-success rounded-r-full" aria-hidden />
-        <div className="text-center px-2">
-          <div className="font-display text-white font-extrabold text-[26px] tabular-nums leading-none tracking-tight">
-            {formatMoney(impactM * 1_000_000, { sign: true, decimals: 1 })}
-          </div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-tdds-400 mt-1.5">
-            captured
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ───────────────────────────────────────────────────────────
-// Single waterfall row
-// ───────────────────────────────────────────────────────────
-
-function WaterfallRow({
-  component, maxAbs, highlighted, onHoverChange,
+function SteppedWaterfall({
+  title, tone, components, finalCm, variant, highlightLeverId, onRowHover,
 }: {
-  component: WaterfallComponent
-  maxAbs: number
-  highlighted: boolean
-  onHoverChange?: (hovered: boolean) => void
+  title: string
+  tone: 'gray' | 'magenta'
+  components: WaterfallComponent[]
+  finalCm: number
+  variant: 'baseline' | 'proposed'
+  highlightLeverId?: string | null
+  onRowHover?: (leverId: string | null) => void
 }) {
-  const { label, baseline, proposed } = component
-  const delta = proposed - baseline
-  const isCost = baseline < 0
-  // For costs, less-negative = improvement. For credits, more positive = improvement.
-  const improved = isCost ? proposed > baseline : proposed > baseline
-  const changed = Math.abs(delta) > 0.01
+  // Compute running totals to position each floating bar.
+  // For revenue (first), we use it as the starting positive column.
+  // For each subsequent step, the bar floats from previous total to new total.
+  type Step = {
+    label: string
+    leverId?: string
+    value: number       // signed delta at this step
+    runningBefore: number
+    runningAfter: number
+    isStart: boolean
+    isEnd: boolean
+  }
 
-  // Bar widths — % of max abs, scaled to half-width (50%) since bars extend from center.
-  const basePct = (Math.abs(baseline) / maxAbs) * 50
-  const propPct = (Math.abs(proposed) / maxAbs) * 50
-  const baselineSide: 'left' | 'right' = baseline < 0 ? 'left' : 'right'
-  const proposedSide: 'left' | 'right' = proposed < 0 ? 'left' : 'right'
+  const steps: Step[] = []
+  let running = 0
+  for (let i = 0; i < components.length; i++) {
+    const c = components[i]
+    const v = variant === 'baseline' ? c.baseline : c.proposed
+    steps.push({
+      label: c.label,
+      leverId: c.leverId,
+      value: v,
+      runningBefore: running,
+      runningAfter: running + v,
+      isStart: i === 0,
+      isEnd: false,
+    })
+    running += v
+  }
+  // Final total column
+  steps.push({
+    label: 'Contribution margin',
+    value: running,
+    runningBefore: 0,
+    runningAfter: running,
+    isStart: false,
+    isEnd: true,
+  })
+
+  // Y-axis: span from min running value to max running value
+  const allYs = steps.flatMap(s => [s.runningBefore, s.runningAfter])
+  const yMin = Math.min(0, ...allYs)
+  const yMax = Math.max(...allYs)
+  const yRange = yMax - yMin || 1
+
+  const barColor = (s: Step) => {
+    if (s.isEnd) return tone === 'gray' ? 'bg-tdds-700' : 'bg-magenta-600'
+    if (s.isStart) return tone === 'gray' ? 'bg-tdds-500' : 'bg-magenta-500'
+    // Positive (up-step) = lighter; negative (down-step) = striped/darker tone
+    if (s.value >= 0) return tone === 'gray' ? 'bg-tdds-400' : 'bg-magenta-400'
+    return tone === 'gray' ? 'bg-tdds-300 ring-1 ring-tdds-400 ring-inset' : 'bg-magenta-200 ring-1 ring-magenta-400 ring-inset'
+  }
+
+  const accentText = tone === 'gray' ? 'text-tdds-700' : 'text-magenta-600'
+
+  // Chart geometry
+  const CHART_HEIGHT = 220
+  const yPct = (v: number) => ((yMax - v) / yRange) * 100 // 0 at top, 100 at bottom
 
   return (
-    <div
-      className={cn(
-        'flex items-center h-11 transition-colors rounded-sm',
-        highlighted && 'bg-magenta-50/60',
-      )}
-      onMouseEnter={() => onHoverChange?.(true)}
-      onMouseLeave={() => onHoverChange?.(false)}
-    >
-      {/* Label */}
-      <div className={cn(
-        'w-[180px] shrink-0 pl-3 pr-3 text-[12px] font-medium leading-tight',
-        highlighted ? 'text-tdds-900' : 'text-tdds-700',
-      )}>
-        {label}
-        {component.leverId && (
-          <div className={cn('text-[10px] mt-0.5 font-normal', highlighted ? 'text-magenta-600' : 'text-tdds-400')}>
-            lever active
+    <div className="bg-tdds-50/50 rounded-md ring-1 ring-tdds-200 p-4">
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="font-display font-bold text-tdds-900 text-[13px] tracking-tight">{title}</div>
+        <div className={cn('font-display font-extrabold text-[18px] tabular-nums tracking-tight', accentText)}>
+          {formatMoney(finalCm * 1_000_000, { decimals: 1 })}
+        </div>
+      </div>
+
+      {/* Chart body */}
+      <div
+        className="relative"
+        style={{ height: CHART_HEIGHT }}
+      >
+        {/* Zero baseline */}
+        <div
+          className="absolute left-0 right-0 border-t border-tdds-300 z-0"
+          style={{ top: `${yPct(0)}%` }}
+        >
+          <span className="absolute -top-3.5 right-0 text-[9px] font-bold uppercase tracking-wider text-tdds-400">$0</span>
+        </div>
+
+        {/* Bars row */}
+        <div className="absolute inset-0 flex items-stretch gap-px">
+          {steps.map((s, i) => {
+            const top = s.isEnd ? yPct(Math.max(0, s.runningAfter)) : yPct(Math.max(s.runningBefore, s.runningAfter))
+            const bottom = s.isEnd ? yPct(Math.min(0, s.runningAfter)) : yPct(Math.min(s.runningBefore, s.runningAfter))
+            const height = Math.abs(bottom - top)
+            const highlighted = highlightLeverId && s.leverId === highlightLeverId
+            return (
+              <div
+                key={i}
+                className="flex-1 relative min-w-0 cursor-default"
+                onMouseEnter={() => s.leverId && onRowHover?.(s.leverId)}
+                onMouseLeave={() => s.leverId && onRowHover?.(null)}
+                title={`${s.label}: ${formatMoney(s.value * 1_000_000, { sign: s.value > 0, decimals: 1 })}`}
+              >
+                {/* The bar itself */}
+                <div
+                  className={cn(
+                    'absolute left-1 right-1 rounded-[2px] transition-all duration-300',
+                    barColor(s),
+                    highlighted && 'ring-2 ring-magenta-500 ring-offset-1',
+                  )}
+                  style={{ top: `${top}%`, height: `${height}%` }}
+                />
+
+                {/* Connector dashed line to next bar's start — only for non-end bars */}
+                {!s.isEnd && i < steps.length - 1 && (
+                  <div
+                    className="absolute right-0 border-t border-dashed border-tdds-300 z-10"
+                    style={{
+                      top: `${yPct(s.runningAfter)}%`,
+                      width: '8px',
+                      transform: 'translateX(50%)',
+                    }}
+                  />
+                )}
+
+                {/* Delta label */}
+                <div
+                  className={cn(
+                    'absolute left-0 right-0 text-center text-[10px] font-bold tabular-nums whitespace-nowrap',
+                    s.value >= 0 ? (tone === 'gray' ? 'text-tdds-900' : 'text-magenta-700') : 'text-critical',
+                  )}
+                  style={{ top: `calc(${top}% - 14px)` }}
+                >
+                  {s.isEnd ? '' : (s.value > 0 ? '+' : '') + formatMoney(s.value * 1_000_000, { decimals: 1 })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* X-axis labels */}
+      <div className="flex items-start gap-px mt-1">
+        {steps.map((s, i) => (
+          <div key={i} className="flex-1 min-w-0 text-center">
+            <div className={cn(
+              'text-[9px] font-semibold leading-tight px-0.5',
+              s.isEnd ? 'text-tdds-900' : 'text-tdds-600',
+            )}>
+              {s.label.replace(' & ', ' & ').split(' ').map((w, wi) => (
+                <span key={wi} className="inline-block">{w}{wi < s.label.split(' ').length - 1 ? ' ' : ''}</span>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* Bar area */}
-      <div className="flex-1 relative h-full min-w-[200px]">
-        {/* zero line */}
-        <div className="absolute left-1/2 top-2 bottom-2 w-px bg-tdds-200" />
-
-        {/* baseline bar — grey, lower track */}
-        <div
-          className="absolute top-[18px] h-[8px] bg-tdds-300 rounded-[2px] transition-all duration-300"
-          style={positionStyle(baselineSide, basePct)}
-        />
-
-        {/* counter-offer bar — magenta, upper track */}
-        <div
-          className={cn(
-            'absolute top-[8px] h-[8px] rounded-[2px] transition-all duration-300 ease-tdds',
-            highlighted ? 'bg-magenta-600' : 'bg-magenta-500',
-          )}
-          style={positionStyle(proposedSide, propPct)}
-        />
-      </div>
-
-      {/* Right number column — baseline above, delta below */}
-      <div className="w-[110px] shrink-0 pl-3 pr-3 text-right tabular-nums">
-        <div className="text-[11px] text-tdds-500 leading-tight">
-          {baseline >= 0 ? '+' : ''}{formatMoney(baseline * 1_000_000, { decimals: 1 })}
-        </div>
-        <div className={cn(
-          'text-[12px] font-semibold leading-tight mt-0.5',
-          !changed ? 'text-tdds-400' : improved ? 'text-success' : 'text-critical',
-        )}>
-          {!changed ? '—' : (delta > 0 ? '+' : '') + formatMoney(delta * 1_000_000, { decimals: 1 })}
-        </div>
+        ))}
       </div>
     </div>
   )
 }
 
-function positionStyle(side: 'left' | 'right', widthPct: number): React.CSSProperties {
-  if (side === 'left') return { right: '50%', width: `${widthPct}%` }
-  return { left: '50%', width: `${widthPct}%` }
+// ───────────────────────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────────────────────
+
+/**
+ * Re-order P&L components so the waterfall reads naturally:
+ *   Revenue → Buying Cost → credits → promos → CM
+ * Keeps every input component in place; just sorts by P&L stack convention.
+ */
+function orderForWaterfall(components: WaterfallComponent[]): WaterfallComponent[] {
+  const priority: Record<string, number> = {
+    revenue: 0,
+    buy_cost: 1,
+    volume_inc: 2,
+    mdf: 3,
+    reclamation: 4,
+    promos: 5,
+    promo_support: 6,
+  }
+  return [...components].sort((a, b) => (priority[a.id] ?? 99) - (priority[b.id] ?? 99))
 }

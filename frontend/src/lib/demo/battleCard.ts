@@ -1,9 +1,8 @@
 /**
- * Battle Card data — Pixel 10 negotiation counterpart.
+ * Battle Card — single-page brief for the Pixel 10 negotiation.
  *
- * Single-page brief Mike Simpson takes into the in-person meeting with
- * Google. Vendor profile, counterpart bio, recent moves, and explicit
- * "open with / fallback / walk-away" positions per lever.
+ * Vendor profile, counterpart bio, recent moves, and explicit
+ * "open with / target / walk-away" positions per lever.
  */
 
 export type CounterpartBio = {
@@ -30,6 +29,16 @@ export type LeverPosition = {
   rationale: string  // 1-sentence why
 }
 
+export type ModelVariant = {
+  sku: string                  // marketing name
+  storage: string              // headline storage (just the most-sold config)
+  colors: string[]             // colorways under negotiation
+  wholesaleUsd: number         // negotiated wholesale price
+  listUsd: number              // MSRP
+  unitsK: number               // expected Q1 units (thousands)
+  mixPct: number               // % of total Pixel 10 mix
+}
+
 export type BattleCard = {
   dealId: string
   vendor: { name: string; logoMark: string }
@@ -41,6 +50,7 @@ export type BattleCard = {
   context: VendorContext[]
   leverPositions: LeverPosition[]
   openersAndCloses: { openers: string[]; closers: string[]; redLines: string[] }
+  models: ModelVariant[]
 }
 
 export const PIXEL_10_BATTLE_CARD: BattleCard = {
@@ -132,6 +142,55 @@ export const PIXEL_10_BATTLE_CARD: BattleCard = {
     },
   ],
 
+  // SKUs under negotiation — every model that rolls under "Pixel 10"
+  models: [
+    {
+      sku: 'Pixel 10',
+      storage: '128 GB',
+      colors: ['Obsidian', 'Porcelain', 'Bay', 'Coral'],
+      wholesaleUsd: 642,
+      listUsd: 749,
+      unitsK: 410,
+      mixPct: 43,
+    },
+    {
+      sku: 'Pixel 10 Pro',
+      storage: '256 GB',
+      colors: ['Obsidian', 'Porcelain', 'Hazel'],
+      wholesaleUsd: 868,
+      listUsd: 999,
+      unitsK: 285,
+      mixPct: 30,
+    },
+    {
+      sku: 'Pixel 10 Pro XL',
+      storage: '256 GB',
+      colors: ['Obsidian', 'Porcelain'],
+      wholesaleUsd: 968,
+      listUsd: 1099,
+      unitsK: 165,
+      mixPct: 17,
+    },
+    {
+      sku: 'Pixel 10 Pro Fold',
+      storage: '512 GB',
+      colors: ['Obsidian', 'Porcelain'],
+      wholesaleUsd: 1548,
+      listUsd: 1799,
+      unitsK: 58,
+      mixPct: 6,
+    },
+    {
+      sku: 'Pixel 10a',
+      storage: '128 GB',
+      colors: ['Obsidian', 'Iris', 'Sage'],
+      wholesaleUsd: 412,
+      listUsd: 499,
+      unitsK: 42,
+      mixPct: 4,
+    },
+  ],
+
   openersAndCloses: {
     openers: [
       '"We\'ve modeled the Pixel 10 cycle six different ways. The version where we both walk in happy lands at $15M contribution margin — $5M above where the proposal sits today. Let me show you the levers."',
@@ -143,7 +202,7 @@ export const PIXEL_10_BATTLE_CARD: BattleCard = {
       '"Let\'s put it in writing this week — I\'d like to skip the standard 3 weeks of back-and-forth."',
     ],
     redLines: [
-      'Do not concede price compression below 3%. Bay re-allocation to Samsung is real and viable.',
+      'Do not concede on pricing below 3% list compression. Bay re-allocation to Samsung is real and viable.',
       'Do not accept MDF cuts. Even flat is acceptable; cuts are not.',
       'Do not lock in 18-month exclusivity asks — Apple cycle pressure makes any exclusive risky.',
     ],

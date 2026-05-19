@@ -1,13 +1,9 @@
 /**
- * News & Signals — vendor-tagged feed.
- *
- * What the AI is watching across active vendor cycles. Filterable by
- * vendor and by bearing (tailwind / headwind / neutral). Each item is
- * paper-prototype illustrative.
+ * News & Signals — vendor-tagged feed, filterable by vendor and by
+ * bearing (tailwind / headwind / neutral).
  */
 
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { ExternalLink, Filter, Wind } from 'lucide-react'
 import { PageHeader, Card, Badge, Button } from '@/components/ui'
 import { FEED, VENDORS, type FeedItem } from '@/lib/demo/supportingData'
@@ -37,9 +33,8 @@ export default function NewsSignals() {
   return (
     <div className="px-10 py-8 max-w-[1400px] mx-auto">
       <PageHeader
-        eyebrow="What the AI is watching"
+        eyebrow="Q1 2026 cycle"
         title="News & Signals"
-        description="Vendor-tagged feed across all active Q1 2026 cycles. Bearings indicate whether a signal strengthens or weakens our position."
         meta={
           <>
             <span className="inline-flex items-center gap-1.5"><Wind className="w-3 h-3 text-success" />{tailwinds} tailwinds</span>
@@ -107,11 +102,6 @@ export default function NewsSignals() {
         </ul>
       </Card>
 
-      <p className="mt-6 text-[11px] text-tdds-400 leading-relaxed max-w-2xl">
-        Feed is illustrative. In production, signals route through Claude Search + curated source list filtered to active vendors.
-        Headlines for Pixel 10 cycle drive directly into the
-        <Link to="/negotiations/pixel-10-q1-2026" className="text-magenta-600 hover:underline ml-1">Deal Room lever hypotheses</Link>.
-      </p>
     </div>
   )
 }

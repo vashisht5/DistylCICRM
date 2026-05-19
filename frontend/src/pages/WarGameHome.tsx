@@ -1,13 +1,9 @@
 /**
- * War Game home — entry point listing scenarios across deals.
- *
- * Right now Monte Carlo runs inside a specific Deal Room (since each
- * simulation is bound to one vendor's lever set). This page is the
- * launcher.
+ * War game — launcher across active cycles.
  */
 
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, ArrowRight, Dices } from 'lucide-react'
+import { ArrowRight, Dices } from 'lucide-react'
 import { PageHeader, Card, Button, Badge } from '@/components/ui'
 import { NEGOTIATIONS_INDEX } from '@/lib/demo/pixel10'
 import { cn, formatMoney } from '@/lib/utils'
@@ -18,33 +14,18 @@ export default function WarGameHome() {
   return (
     <div className="px-10 py-8 max-w-[1200px] mx-auto">
       <PageHeader
-        eyebrow="Scenario simulation"
+        eyebrow="Q1 2026 cycle"
         title="War game"
-        description="Monte Carlo across each active vendor cycle. Each run samples levers from their uncertainty ranges and shows the distribution of likely Contribution Margin outcomes."
+        meta={
+          <>
+            <span><strong className="text-tdds-900 font-semibold">{NEGOTIATIONS_INDEX.length}</strong> cycles available</span>
+            <span className="text-tdds-300">·</span>
+            <span>Monte Carlo · 1,000 runs default</span>
+          </>
+        }
       />
 
-      {/* Method note */}
-      <Card className="mb-8">
-        <div className="p-5 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-sm bg-magenta-50 text-magenta-600 grid place-items-center shrink-0">
-            <Sparkles className="w-5 h-5" strokeWidth={1.85} />
-          </div>
-          <div>
-            <div className="font-display font-bold text-tdds-900 text-base tracking-tight">How the simulator works</div>
-            <p className="text-[13px] text-tdds-600 mt-1 leading-relaxed">
-              For each scenario, every lever is sampled from its [min, max] range using a triangular distribution
-              centered on the current counter-offer. The output is a distribution of CM outcomes —
-              <span className="text-tdds-900 font-semibold"> P10 / P50 / P90 </span>
-              — plus best / worst cases and the probability of meeting the internal target.
-            </p>
-            <p className="text-[12px] text-tdds-500 mt-2">
-              Click any vendor below to open its Deal Room and run scenarios.
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <div className="eyebrow mb-3">Active cycles · run scenarios on any</div>
+      <div className="eyebrow mb-3">Active cycles</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {NEGOTIATIONS_INDEX.map(n => {
           const isHero = n.id === 'pixel-10-q1-2026'

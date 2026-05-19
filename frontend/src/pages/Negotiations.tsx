@@ -1,12 +1,9 @@
 /**
- * Negotiations — home screen.
- *
- * Dashboard view of every active vendor negotiation in the device portfolio.
- * Every row leads with the dollar number, because Mike Simpson does.
+ * Negotiations — portfolio view of every active vendor cycle.
  */
 
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Clock, Target } from 'lucide-react'
+import { ArrowRight, Clock } from 'lucide-react'
 import { PageHeader, Card, Badge, Button } from '@/components/ui'
 import { NEGOTIATIONS_INDEX, STATUS_LABEL, type Negotiation } from '@/lib/demo/pixel10'
 import { cn, formatMoney, formatRelative, type Tone } from '@/lib/utils'
@@ -34,19 +31,18 @@ export default function Negotiations() {
   return (
     <div className="px-10 py-8 max-w-[1400px] mx-auto">
       <PageHeader
-        eyebrow="Q1 2026 cycle"
-        title="Device Procurement — Active Negotiations"
-        description="Five active vendor cycles. Devices is the single largest external-spend category."
+        eyebrow="Device category · Q1 2026"
+        title="Negotiations"
         meta={
           <>
             <span><strong className="text-tdds-900 font-semibold">{NEGOTIATIONS_INDEX.length}</strong> active</span>
             <span className="text-tdds-300">·</span>
-            <span><strong className="text-tdds-900 font-semibold">{unitsTotalM.toFixed(1)}M</strong> units in play</span>
+            <span><strong className="text-tdds-900 font-semibold">{unitsTotalM.toFixed(1)}M</strong> units</span>
             <span className="text-tdds-300">·</span>
             <span>Updated {formatRelative('2026-05-15T14:00:00Z')}</span>
           </>
         }
-        actions={<Button variant="primary" size="md" iconRight={ArrowRight} onClick={() => navigate('/negotiations/pixel-10-q1-2026')}>Open Pixel 10 Deal Room</Button>}
+        actions={<Button variant="primary" size="md" iconRight={ArrowRight} onClick={() => navigate('/negotiations/pixel-10-q1-2026')}>Pixel 10 deal room</Button>}
       />
 
       {/* Portfolio impact bar */}
@@ -56,22 +52,21 @@ export default function Negotiations() {
           <div className="eyebrow mb-3">Contribution margin across all active cycles</div>
           <div className="flex items-end gap-10 flex-wrap">
             <Headline
-              eyebrow="Baseline (vendor proposals as-is)"
+              eyebrow="Vendor proposals · as-is"
               value={formatMoney(totalBaseline * 1_000_000, { decimals: 1 })}
-              sub="If we accept everything they sent"
             />
             <Arrow />
             <Headline
-              eyebrow="Counter-offer in flight"
+              eyebrow="With current counter-offers"
               value={formatMoney(totalProposed * 1_000_000, { decimals: 1 })}
               accent
-              sub={`+${formatMoney(portfolioDeltaM * 1_000_000, { sign: false })} captureable`}
+              sub={`+${formatMoney(portfolioDeltaM * 1_000_000, { sign: false })} vs. as-is`}
             />
             <Arrow />
             <Headline
               eyebrow="Internal target"
               value={formatMoney(totalTarget * 1_000_000, { decimals: 1 })}
-              sub={portfolioUnclaimedM > 0 ? `${formatMoney(portfolioUnclaimedM * 1_000_000)} left on the table` : 'on track'}
+              sub={portfolioUnclaimedM > 0 ? `${formatMoney(portfolioUnclaimedM * 1_000_000)} remaining` : 'on track'}
               tone="muted"
             />
           </div>
@@ -174,11 +169,6 @@ export default function Negotiations() {
         </table>
       </Card>
 
-      {/* Footnote */}
-      <p className="mt-6 text-[11px] text-tdds-400 leading-relaxed max-w-2xl">
-        <Target className="inline w-3 h-3 -mt-0.5 mr-1" strokeWidth={2} />
-        Figures derived from predecessor-device sell-through patterns and current vendor proposals.
-      </p>
     </div>
   )
 }
