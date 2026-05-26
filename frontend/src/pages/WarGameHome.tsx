@@ -18,14 +18,16 @@ export default function WarGameHome() {
         title="War game"
         meta={
           <>
-            <span><strong className="text-tdds-900 font-semibold">{NEGOTIATIONS_INDEX.length}</strong> cycles available</span>
+            <span><strong className="text-tdds-900 font-semibold">{NEGOTIATIONS_INDEX.filter(n => n.id === 'pixel-10-q1-2026').length}</strong> ready to simulate</span>
+            <span className="text-tdds-300">·</span>
+            <span><strong className="text-tdds-900 font-semibold">{NEGOTIATIONS_INDEX.length - 1}</strong> awaiting model setup</span>
             <span className="text-tdds-300">·</span>
             <span>Monte Carlo · 1,000 runs default</span>
           </>
         }
       />
 
-      <div className="eyebrow mb-3">Active cycles</div>
+      <div className="eyebrow mb-3">Active negotiations</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {NEGOTIATIONS_INDEX.map(n => {
           const isHero = n.id === 'pixel-10-q1-2026'

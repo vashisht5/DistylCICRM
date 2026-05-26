@@ -67,7 +67,7 @@ export default function SettingsPage() {
             {[
               { name: 'Bloomberg news feed', status: 'connected' },
               { name: 'Vendor proposal vault', status: 'connected' },
-              { name: 'EIP (vendor pricing)', status: 'planned' },
+              { name: 'Equipment Installment Plan roll-off', status: 'planned' },
               { name: 'Sell-through history (Amdocs)', status: 'pending-approval' },
             ].map(d => (
               <div key={d.name} className="flex items-center justify-between text-[13px]">

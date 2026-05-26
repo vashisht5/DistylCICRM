@@ -151,12 +151,12 @@ export default function Negotiations() {
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-wider text-tdds-400 mb-3">Next move</div>
             <div className="font-display text-2xl font-bold leading-tight">Pixel 10 counter-offer</div>
-            <div className="text-tdds-300 text-sm mt-1">Google · 12 days to close</div>
+            <div className="text-tdds-300 text-sm mt-1">Google · 11 days to close</div>
           </div>
           <div className="flex items-baseline gap-2 mt-5">
             <Clock className="w-4 h-4 text-magenta-400" strokeWidth={2} />
             <span className="text-[11px] uppercase tracking-wider text-tdds-300 font-semibold">CPO review scheduled</span>
-            <span className="text-[11px] text-tdds-400 ml-auto">w/o May 11</span>
+            <span className="text-[11px] text-tdds-400 ml-auto">w/o May 25</span>
           </div>
         </div>
       </div>

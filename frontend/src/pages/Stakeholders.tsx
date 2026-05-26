@@ -12,15 +12,13 @@ import { STAKEHOLDERS, type Stakeholder } from '@/lib/demo/supportingData'
 import { cn } from '@/lib/utils'
 
 const SIDE_META = {
-  internal: { label: 'T-Mobile Procurement', icon: Crown, color: 'text-magenta-600 bg-magenta-50 ring-magenta-200' },
-  partner:  { label: 'Partner',              icon: Building2, color: 'text-tdds-700 bg-tdds-100 ring-tdds-200' },
-  vendor:   { label: 'Vendor',               icon: Building2, color: 'text-warning bg-warning/8 ring-warning/20' },
+  internal: { label: 'T-Mobile Procurement', icon: Crown,     color: 'text-magenta-600 bg-magenta-50 ring-magenta-200' },
+  vendor:   { label: 'Vendor counterparts',  icon: Building2, color: 'text-warning bg-warning/8 ring-warning/20' },
 }
 
 export default function Stakeholders() {
   const grouped: Record<Stakeholder['side'], Stakeholder[]> = {
     internal: STAKEHOLDERS.filter(s => s.side === 'internal'),
-    partner:  STAKEHOLDERS.filter(s => s.side === 'partner'),
     vendor:   STAKEHOLDERS.filter(s => s.side === 'vendor'),
   }
 
@@ -39,7 +37,7 @@ export default function Stakeholders() {
       />
 
       <div className="space-y-8">
-        {(['internal', 'partner', 'vendor'] as const).map(side => {
+        {(['internal', 'vendor'] as const).map(side => {
           const items = grouped[side]
           if (items.length === 0) return null
           const meta = SIDE_META[side]

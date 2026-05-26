@@ -102,7 +102,7 @@ export const PIXEL_10_BATTLE_CARD: BattleCard = {
       leverId: 'price_compression',
       open: 'Ask for 6% list compression off Pixel 10 wholesale',
       target: '5% — matches Pixel 9 sell-through-implied price elasticity',
-      walkAway: '3% — anything below and we re-allocate the bay to Samsung S25',
+      walkAway: '3% — anything below and we re-allocate the bay to Samsung S26',
       rationale: 'Pixel 9 sell-through shows clear 5% price ceiling; we have the data.',
     },
     {
@@ -198,7 +198,7 @@ export const PIXEL_10_BATTLE_CARD: BattleCard = {
       '"Q1 is your volume OKR. Q1 is our margin number. The math says they don\'t conflict if we adjust three things."',
     ],
     closers: [
-      '"If we land at $14M+ I\'ll walk this up to our exec team this week. Below that, we have to look at Samsung\'s S25 bay allocation."',
+      '"If we land at $14M+ I\'ll walk this up to our exec team this week. Below that, we have to look at Samsung\'s S26 bay allocation."',
       '"Let\'s put it in writing this week — I\'d like to skip the standard 3 weeks of back-and-forth."',
     ],
     redLines: [

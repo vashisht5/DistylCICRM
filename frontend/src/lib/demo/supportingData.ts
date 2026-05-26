@@ -29,7 +29,7 @@ export const VENDORS: VendorProfile[] = [
     category: 'flagship',
     hq: 'Mountain View, CA',
     annualSpendBnUsd: 0.9,
-    activeNegotiations: 1,
+    activeNegotiations: 3,
     exposureTone: 'high',
     posture: 'Aggressive on volume tiers; cooperative on MDF.',
     riskNotes: 'Tensor G5 yield risk — capacity could tighten Q1.',
@@ -42,10 +42,10 @@ export const VENDORS: VendorProfile[] = [
     category: 'core',
     hq: 'Suwon, KR',
     annualSpendBnUsd: 2.1,
-    activeNegotiations: 1,
+    activeNegotiations: 2,
     exposureTone: 'critical',
     posture: 'Cycle-over-cycle volume push. Promo support flexible.',
-    riskNotes: 'S25 launch cross-pull on premium tier vs Pixel 10.',
+    riskNotes: 'S26 launch cross-pull on premium tier vs Pixel 10.',
     recentMoves: 6,
   },
   {
@@ -75,6 +75,32 @@ export const VENDORS: VendorProfile[] = [
     recentMoves: 3,
   },
   {
+    id: 'oneplus',
+    name: 'OnePlus',
+    logoMark: 'O',
+    category: 'tier-two',
+    hq: 'Shenzhen, CN',
+    annualSpendBnUsd: 0.12,
+    activeNegotiations: 1,
+    exposureTone: 'medium',
+    posture: 'Aggressive on activation credit; protective on wholesale.',
+    riskNotes: 'OPPO parent restructuring — supply continuity uncertain.',
+    recentMoves: 2,
+  },
+  {
+    id: 'oppo',
+    name: 'OPPO',
+    logoMark: 'O',
+    category: 'tier-two',
+    hq: 'Dongguan, CN',
+    annualSpendBnUsd: 0.08,
+    activeNegotiations: 1,
+    exposureTone: 'low',
+    posture: 'Pursuing North America scale-up — accepts lower margin for volume.',
+    riskNotes: 'Limited US carrier history; channel risk on warranty execution.',
+    recentMoves: 1,
+  },
+  {
     id: 'htc',
     name: 'HTC',
     logoMark: 'H',
@@ -85,6 +111,19 @@ export const VENDORS: VendorProfile[] = [
     exposureTone: 'low',
     posture: 'Margin-constrained; pursuing strategic distribution.',
     riskNotes: 'Smallest volume — least leverage but highest flexibility.',
+    recentMoves: 1,
+  },
+  {
+    id: 'tcl',
+    name: 'TCL',
+    logoMark: 'T',
+    category: 'tier-two',
+    hq: 'Huizhou, CN',
+    annualSpendBnUsd: 0.06,
+    activeNegotiations: 1,
+    exposureTone: 'low',
+    posture: 'Volume-driven; cooperative on promo co-fund.',
+    riskNotes: 'Concentrated in entry tier — exposure to prepaid channel shifts.',
     recentMoves: 1,
   },
 ]
@@ -120,7 +159,7 @@ export const FEED: FeedItem[] = [
     vendor: 'Samsung',
     source: 'Reuters',
     publishedAt: '2026-05-15T08:15:00Z',
-    headline: 'Samsung S25 sell-through pre-orders 18% above S24 trajectory in NA',
+    headline: 'Samsung S26 pre-orders 18% above S25 trajectory in NA',
     summary: 'Strong pre-order velocity for premium tier may strengthen Samsung\'s position in Q1 carrier negotiations.',
     tone: 'high',
     bearing: 'headwind',
@@ -165,7 +204,7 @@ export const FEED: FeedItem[] = [
     source: 'Counterpoint',
     publishedAt: '2026-05-11T12:00:00Z',
     headline: 'Samsung MDF spend in NA cut 12% YoY — competitive opening for carriers',
-    summary: 'Reduced upstream marketing budget could shift to direct carrier MDF. Worth probing in Galaxy S25 cycle.',
+    summary: 'Reduced upstream marketing budget could shift to direct carrier MDF. Worth probing in Galaxy S26 cycle.',
     tone: 'medium',
     bearing: 'tailwind',
     category: 'corporate',
@@ -189,7 +228,7 @@ export type Stakeholder = {
   id: string
   name: string
   title: string
-  side: 'internal' | 'vendor' | 'partner'
+  side: 'internal' | 'vendor'
   org: string
   influence: 'high' | 'medium' | 'low'
   notes: string
@@ -275,7 +314,7 @@ export const STAKEHOLDERS: Stakeholder[] = [
     org: 'Samsung',
     influence: 'high',
     notes: 'Aggressive on volume tiers. Has authority for MDF up to $2.5M without escalation.',
-    tags: ['negotiation-counterpart', 's25'],
+    tags: ['negotiation-counterpart', 's26'],
   },
   {
     id: 'apple-rep',

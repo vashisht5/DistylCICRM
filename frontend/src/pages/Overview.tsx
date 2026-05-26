@@ -20,11 +20,11 @@ const STATUS_TONE: Record<Negotiation['status'], Tone> = {
   closed_lost: 'critical',
 }
 
-// Internal calendar — would come from the CPO's calendar integration in production.
 const UPCOMING = [
-  { when: 'Tomorrow · 10:00 AM',  title: 'Pixel 10 counter-offer review',  who: 'CPO + Procurement Lead',     tone: 'brand' as const },
-  { when: 'May 22 · 2:00 PM',     title: 'Google in-person — T-Mobile HQ', who: 'Bellevue · 90 min',          tone: 'high' as const },
-  { when: 'May 27 · 11:00 AM',    title: 'Samsung S25 proposal walkthrough', who: 'Sourcing + Finance BP',    tone: 'medium' as const },
+  { when: 'Tomorrow · 10:00 AM',  title: 'Pixel 10 counter-offer review',      who: 'CPO + Procurement Lead',   tone: 'brand' as const },
+  { when: 'May 28 · 2:00 PM',     title: 'Google in-person — T-Mobile HQ',     who: 'Bellevue · 90 min',        tone: 'high' as const },
+  { when: 'May 29 · 5:00 PM',     title: 'Entry-tier RFP closes',              who: 'HTC, TCL · final review',  tone: 'medium' as const },
+  { when: 'Jun 2 · 4:00 PM',      title: 'Mid-tier RFP closes',                who: 'Motorola, OPPO, Pixel 9a', tone: 'medium' as const },
 ]
 
 export default function Overview() {
@@ -89,9 +89,8 @@ export default function Overview() {
       {/* ── Two-column: Upcoming + What changed ────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card>
-          <div className="px-5 py-3 border-b border-tdds-200 flex items-baseline justify-between">
+          <div className="px-5 py-3 border-b border-tdds-200">
             <div className="eyebrow inline-flex items-center gap-1.5"><Calendar className="w-3 h-3" />Up next</div>
-            <div className="text-[11px] text-tdds-400">From your calendar</div>
           </div>
           <ul className="divide-y divide-tdds-100">
             {UPCOMING.map(item => (
@@ -216,7 +215,7 @@ export default function Overview() {
           icon={Building2}
           label="Vendors"
           count={`${VENDORS.length}`}
-          sub="$10.6B annual spend"
+          sub={`$${VENDORS.reduce((s, v) => s + v.annualSpendBnUsd, 0).toFixed(1)}B annual spend`}
           onClick={() => navigate('/vendors')}
         />
         <QuickLink
