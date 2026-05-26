@@ -162,14 +162,16 @@ export default function Overview() {
           {[...NEGOTIATIONS_INDEX].sort((a, b) => a.daysToClose - b.daysToClose).map(n => {
             const delta = n.proposedCmM - n.baselineCmM
             const isHero = n.id === 'pixel-10-q1-2026'
+            const isProvisioned = n.id === 'pixel-10-q1-2026'
             const isUrgent = n.daysToClose <= 7
             return (
               <li
                 key={n.id}
-                onClick={() => navigate(`/negotiations/${n.id}`)}
+                onClick={isProvisioned ? () => navigate(`/negotiations/${n.id}`) : undefined}
                 className={cn(
-                  'px-5 py-3 flex items-center gap-4 cursor-pointer transition-colors group',
-                  isHero ? 'bg-magenta-50/40 hover:bg-magenta-50' : 'hover:bg-tdds-50',
+                  'px-5 py-3 flex items-center gap-4 transition-colors group',
+                  isProvisioned ? 'cursor-pointer' : 'cursor-default',
+                  isHero ? 'bg-magenta-50/40 hover:bg-magenta-50' : isProvisioned ? 'hover:bg-tdds-50' : '',
                 )}
               >
                 <div className={cn(
@@ -197,7 +199,11 @@ export default function Overview() {
                   </div>
                   <div className="text-[10px] text-tdds-400 font-medium uppercase tracking-wider mt-0.5">to close</div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-tdds-300 group-hover:text-tdds-900 transition-colors shrink-0" strokeWidth={1.85} />
+                {isProvisioned ? (
+                  <ArrowRight className="w-4 h-4 text-tdds-300 group-hover:text-tdds-900 transition-colors shrink-0" strokeWidth={1.85} />
+                ) : (
+                  <span className="text-[10px] uppercase tracking-wider text-tdds-300 font-semibold shrink-0">Preview</span>
+                )}
               </li>
             )
           })}

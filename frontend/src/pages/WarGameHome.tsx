@@ -3,7 +3,7 @@
  */
 
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Dices } from 'lucide-react'
+import { Dices } from 'lucide-react'
 import { PageHeader, Card, Button, Badge } from '@/components/ui'
 import { NEGOTIATIONS_INDEX } from '@/lib/demo/pixel10'
 import { cn, formatMoney } from '@/lib/utils'
@@ -29,8 +29,14 @@ export default function WarGameHome() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {NEGOTIATIONS_INDEX.map(n => {
           const isHero = n.id === 'pixel-10-q1-2026'
+          const isProvisioned = n.id === 'pixel-10-q1-2026'
           return (
-            <Card key={n.id} interactive className="p-5" onClick={() => navigate(`/negotiations/${n.id}`)}>
+            <Card
+              key={n.id}
+              interactive={isProvisioned}
+              className="p-5"
+              onClick={isProvisioned ? () => navigate(`/negotiations/${n.id}`) : undefined}
+            >
               <div className="flex items-start gap-3 mb-3">
                 <div className={cn(
                   'w-10 h-10 rounded-sm grid place-items-center font-display font-extrabold text-base shrink-0',
@@ -42,7 +48,9 @@ export default function WarGameHome() {
                   <div className="font-display font-bold text-tdds-900 text-[14px] tracking-tight">{n.vendor.name}</div>
                   <div className="text-[11px] text-tdds-500 mt-0.5">{n.device} · {n.cycle}</div>
                 </div>
-                {isHero && <Badge tone="brand" variant="solid" uppercase>Live</Badge>}
+                {isHero
+                  ? <Badge tone="brand" variant="solid" uppercase>Live</Badge>
+                  : <Badge tone="monitor" variant="dot" uppercase>Preview</Badge>}
               </div>
               <div className="flex items-center justify-between text-[12px] tabular-nums">
                 <div>
@@ -53,7 +61,7 @@ export default function WarGameHome() {
                     <span className="text-magenta-600">{formatMoney(n.proposedCmM * 1_000_000, { decimals: 1 })}</span>
                   </div>
                 </div>
-                <Button variant="secondary" size="sm" icon={Dices}>Open</Button>
+                {isProvisioned && <Button variant="secondary" size="sm" icon={Dices}>Open</Button>}
               </div>
             </Card>
           )
