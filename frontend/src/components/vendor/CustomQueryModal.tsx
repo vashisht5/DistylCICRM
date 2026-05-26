@@ -106,19 +106,14 @@ export function CustomQueryModal({ open, onClose, initialCutId, vendorName }: Cu
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <header className="px-6 py-4 border-b border-tdds-200 flex items-start justify-between gap-4">
-          <div>
-            <div className="eyebrow mb-1 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-magenta-500" strokeWidth={2.25} /> Ask the data
-            </div>
-            <h2 className="font-display text-xl font-bold text-tdds-900 tracking-tight leading-tight">
-              {vendorName} · procurement history
+        <header className="px-6 py-4 border-b border-tdds-200 flex items-center justify-between gap-4">
+          <div className="inline-flex items-center gap-2 min-w-0">
+            <Sparkles className="w-4 h-4 text-magenta-500 shrink-0" strokeWidth={2.25} />
+            <h2 className="font-display text-base font-bold text-tdds-900 tracking-tight leading-tight">
+              {vendorName} · historical data
             </h2>
-            <p className="text-[12px] text-tdds-500 mt-1 max-w-xl leading-relaxed">
-              Query 11 quarters of cycle-level data — pricing, sell-through, promos, returns, MDF.
-            </p>
           </div>
-          <button onClick={onClose} className="text-tdds-400 hover:text-tdds-900 p-1 -m-1" aria-label="Close">
+          <button onClick={onClose} className="text-tdds-400 hover:text-tdds-900 p-1 -m-1 shrink-0" aria-label="Close">
             <X className="w-5 h-5" strokeWidth={1.75} />
           </button>
         </header>
@@ -417,15 +412,15 @@ function PromoLiftCarrierResponse() {
         </div>
       </div>
       <div className="p-4">
-        <div className="flex items-end gap-3 h-32">
+        <div className="flex items-stretch gap-3 h-36">
           {data.map(d => (
-            <div key={d.q} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex items-end justify-center gap-0.5 h-full">
+            <div key={d.q} className="flex-1 flex flex-col items-center">
+              <div className="flex-1 w-full flex items-end justify-center gap-1 min-h-0">
                 <div className="w-1/4 bg-tdds-700 rounded-t-[1px]" style={{ height: `${(d.tradeIn / max) * 100}%` }} title={`Trade-in ${d.tradeIn}%`} />
                 <div className="w-1/4 bg-tdds-400 rounded-t-[1px]" style={{ height: `${(d.cashBack / max) * 100}%` }} title={`Cash-back ${d.cashBack}%`} />
                 <div className="w-1/4 bg-magenta-500 rounded-t-[1px]" style={{ height: `${(d.activation / max) * 100}%` }} title={`Activation ${d.activation}%`} />
               </div>
-              <div className="text-[10px] font-semibold text-tdds-500 tabular-nums">{d.q}</div>
+              <div className="text-[10px] font-semibold text-tdds-500 tabular-nums mt-1.5">{d.q}</div>
             </div>
           ))}
         </div>

@@ -43,7 +43,7 @@ export default function VendorDetail() {
     )
   }
 
-  const neg = NEGOTIATIONS_INDEX.find(n => n.vendor.name === 'Google')
+  const neg = NEGOTIATIONS_INDEX.find(n => n.id === 'pixel-10-q1-2026')
   const latest = GOOGLE_HISTORY[GOOGLE_HISTORY.length - 1]
   const eipTotal = GOOGLE_EIP_ROLLOFF.reduce((s, e) => s + e.unitsK, 0)
 
@@ -100,30 +100,22 @@ export default function VendorDetail() {
       </div>
 
       {/* ── Ask the data — custom query + quick cuts ──────────── */}
-      <div className="mb-6 bg-white rounded-md ring-1 ring-tdds-200 px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-sm bg-magenta-50 ring-1 ring-magenta-200 grid place-items-center shrink-0">
-            <Sparkles className="w-4 h-4 text-magenta-500" strokeWidth={2.25} />
-          </div>
-          <div className="min-w-0">
-            <div className="eyebrow">Ask the data</div>
-            <div className="font-display font-bold text-tdds-900 text-base tracking-tight leading-tight mt-0.5">
-              Slice 11 quarters of Google procurement history
-            </div>
-            <div className="text-[11px] text-tdds-500 mt-0.5 font-medium">
-              Cycle-level data on pricing, sell-through, promos, returns, MDF.
-            </div>
-          </div>
+      <div className="mb-6 bg-white rounded-md ring-1 ring-tdds-200 px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
+        <div className="inline-flex items-center gap-2 min-w-0">
+          <Sparkles className="w-3.5 h-3.5 text-magenta-500 shrink-0" strokeWidth={2.25} />
+          <span className="font-semibold text-tdds-900 text-[13px] tracking-tight">Query historical data</span>
+          <span className="text-tdds-300 text-[11px]">·</span>
+          <span className="text-[11px] text-tdds-500 font-medium truncate">11 quarters · pricing, sell-through, promos, MDF</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <QuickCutsDropdown onPick={openWithCut} />
           <button
             type="button"
             onClick={() => openWithCut(null)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-magenta-500 hover:bg-magenta-600 text-white text-[12px] font-semibold rounded-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-magenta-500 hover:bg-magenta-600 text-white text-[12px] font-semibold rounded-sm transition-colors"
           >
             <MessageSquare className="w-3.5 h-3.5" strokeWidth={2.25} />
-            Ask a custom question
+            Ask a question
           </button>
         </div>
       </div>
